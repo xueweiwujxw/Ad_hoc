@@ -4,37 +4,40 @@
 
 using namespace std;
 using namespace opnet;
+#define pksize 1024
 
 opnet_ctrller::opnet_ctrller() {
     this->packetCount = 0;
 }
-opnet_ctrller::~opnet_ctrller() {
-    
+opnet_ctrller::~opnet_ctrller() { 
+}
+
+void opnet_ctrller::send() {
+    Packet *p = op_pk_create(pksize);
+    op_pk_send(p, 0);
+    cout << "node " << op_node_id() << " sent a packet" << endl;
 }
 
 void opnet_ctrller::on_sim_start() {
-    cout << "opnet_sim_start" << endl;
-    int id;
-    op_ima_obj_attr_get_int32(op_node_id(), "user id", &id);
-    cout << "id: " << id << endl;
-    
+    cout << "this is node " << op_node_id() << " start." << endl;
+    for (int i = 0; i < 5; ++i)
+        op_intrpt_schedule_self(op_sim_time(), 0);
+    // cout << op_sim_time() << endl;
 }
 
-
 void opnet_ctrller::on_self() {
-    double pksize = 1024;
-    Packet *p = op_pk_create(pksize);
-    op_pk_send(p, 0);
+    this->send();
 }
 
 void opnet_ctrller::on_stream(int id) {
-    cout << "opnet_strm" << endl;
+    cout << "node " << op_node_id() << " received packet from stream of " << id;
     this->packetCount++;
     Packet *p = op_pk_get(id);
-    // void *buffer = 0;
-    // op_pk_fd_get_ptr(p, 0, &buffer);
-    cout << "opnet_pk_recv" << endl;
+    unsigned int len = op_pk_total_size_get(p) / 8;
+    cout << ", packet size: " << len << endl;
     op_pk_destroy(p);
+    // cout << "simluation time: " << op_sim_time() << endl;
+    // this->send();
 }
 
 void opnet_ctrller::on_stat(int id) {
@@ -43,6 +46,6 @@ void opnet_ctrller::on_stat(int id) {
 }
 
 void opnet_ctrller::on_sim_stop() {
-    cout << "Received packet count: " << this->packetCount << endl;
-    cout << "opnet_sim_stop" << endl;
+    cout << "node " << op_node_id() << " received packets: " << this->packetCount << endl;
+    cout << "this is node " << op_node_id() << " end." << endl;
 }

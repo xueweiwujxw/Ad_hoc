@@ -22,10 +22,11 @@ namespace opnet {
     public:
         opnet_ctrller();
         void on_sim_start();
-        void on_stream(int id);
-        void on_stat(int id);
+        void on_stream(int);
+        void on_stat(int);
         void on_sim_stop();
         void on_self();
+        void send();
         ~opnet_ctrller();
     };  
 }
