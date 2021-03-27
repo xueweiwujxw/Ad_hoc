@@ -27,6 +27,7 @@ namespace opnet {
         void on_sim_stop();
         void on_self();
         void send();
+        void schedule_self();
         ~opnet_ctrller();
     };  
 }
