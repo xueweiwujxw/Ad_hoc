@@ -29,7 +29,7 @@ namespace opnet
     protected:
         message_hello createHello();
         message_tc createTC();
-        void recvMessage();
+        void recvMessage(void *data);
         void handleLocalLinkTable();
         void handleOneHopNeighborTable();
         void handleTwoHopNeighborTable();

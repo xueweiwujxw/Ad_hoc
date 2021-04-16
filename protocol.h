@@ -26,6 +26,13 @@ namespace opnet
         WILL_ALWAYS
     };
 
+    //message type
+    enum Messagetype
+    {
+        HELLO,
+        TC
+    };
+
     //link status
     struct link_status
     {
@@ -63,6 +70,14 @@ namespace opnet
         }
     };
 
+    //message(HELLO, TC)
+    union message
+    {
+        message_tc mt;
+        message_hello mh;
+    };
+    
+
     //message structure
     struct message_packet
     {
@@ -73,11 +88,7 @@ namespace opnet
         unsigned int TTL : 8;                       //消息被传送的最大跳数，在消息被重传之前，TTL减一，当一个节点收到一个消息，其TTL为0或1时，这个消息在任何情况下都不应该被重传
         unsigned int hopCount : 8;                  //跳数，在一个消息被重传前，跳数加一
         unsigned int messageSequenceNumber : 16;    //消息的序列号
-        union message                               //MESSAGE，HELLO和TC均属于MESSAGE
-        {
-            message_hello mh;
-            message_tc mt;
-        } message;
+        vector<message> messages;                   //MESSAGE域
     };
 
     //packet structure

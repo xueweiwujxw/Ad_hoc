@@ -53,8 +53,13 @@ message_tc Adnode_ctrl::createTC() {
     return mt;
 }
 
-void Adnode_ctrl::recvMessage() {
+void Adnode_ctrl::recvMessage(void *data) {
+    message_packet* messp = reinterpret_cast<message_packet *>(data);
+    if (messp->messageType == HELLO) {
+        
+    } else if (messp->messageType == TC) {
 
+    }
 }
 
 void Adnode_ctrl::handleLocalLinkTable() {
