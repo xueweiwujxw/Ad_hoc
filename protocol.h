@@ -16,24 +16,51 @@ namespace opnet
         MPR_LINK        //表中节点被HELLO message的发送节点选为MPR
     };
 
-    //hello message
-    struct message_hello
+    //Willingness
+    enum Willingness
     {
-        unsigned int reserved0 : 16;                //保留字段：0000_0000_0000_0000
-        unsigned int hTime : 8;                     //HELLO发送时间间隔
-        unsigned int willingness : 8;               //一个节点为其他节点携带网络流量的意愿
-        Linkcode linkcode : 8;                      //链路类型
-        unsigned int reserved1 : 8;                 //保留字段：0000_0000
-        unsigned int linkMessageSize: 16;           //本链路消息的大小
-        vector<unsigned int> neighborAddresses;     //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
+        WILL_NEVER,
+        WILL_LOW,
+        WILL_DEFAULT,
+        WILL_HIGH,
+        WILL_ALWAYS
     };
 
-    //TC message
+    //link status
+    struct link_status
+    {
+        unsigned int linkcode : 8;                  //链路类型
+        unsigned int reserved : 8;                 //保留字段：0000_0000
+        unsigned int linkMessageSize: 16;           //本链路消息的大小，从链路类型字段开始直到下一个链路类型字段之前(若无，则到分组结尾)
+        vector<unsigned int> neighborAddresses;     //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
+        link_status(Linkcode lc) {
+            this->reserved = 0;
+            this->linkcode = lc;
+        }
+    };
+    
+
+    //hello message，执行链路检测、邻居发现的功能
+    struct message_hello
+    {
+        unsigned int reserved : 16;                //保留字段：0000_0000_0000_0000
+        unsigned int hTime : 8;                     //HELLO发送时间间隔
+        unsigned int willingness : 8;               //一个节点为其他节点携带网络流量的意愿
+        vector<link_status> linkMessage;
+        message_hello() {
+            this->reserved = 0;
+        }
+    };
+
+    //TC message，执行MPR信息声明功能
     struct message_tc
     {
         unsigned int MSSN : 16;                     //MPR Selector序列号
         unsigned int reserved : 16;                 //保留字段0000_0000_0000_0000
         vector<unsigned int> MPRSelectorAddresses;  //多点中继选择的地址
+        message_tc() {
+            this->reserved = 0;
+        }
     };
 
     //message structure
@@ -41,10 +68,10 @@ namespace opnet
     {
         unsigned int messageType : 8;               //MESSAGE域中将要被发现的类型
         unsigned int vTime : 8;                     //分组携带消息的有效期
-        unsigned messageSize : 16;                  //消息的长度
+        unsigned messageSize : 16;                  //消息的长度，从消息类型的开始处计算直到下一个消息类型的开始处(若无，则到消息分组结束)
         unsigned int originatorAddress;             //产生该消息的主地址，重传中也不会变化，和IP地址不同
-        unsigned int TTL : 8;                       //消息被传送的最大跳数
-        unsigned int hopCount : 8;                  //跳数
+        unsigned int TTL : 8;                       //消息被传送的最大跳数，在消息被重传之前，TTL减一，当一个节点收到一个消息，其TTL为0或1时，这个消息在任何情况下都不应该被重传
+        unsigned int hopCount : 8;                  //跳数，在一个消息被重传前，跳数加一
         unsigned int messageSequenceNumber : 16;    //消息的序列号
         union message                               //MESSAGE，HELLO和TC均属于MESSAGE
         {
@@ -54,10 +81,10 @@ namespace opnet
     };
 
     //packet structure
-    struct packet
+    struct olsr_packet
     {
-        unsigned int packetLength : 16;             //分组长度
-        unsigned int packetSequenceNumber : 16;     //分组序列号
+        unsigned int packetLength : 16;             //分组长度，以bytes计
+        unsigned int packetSequenceNumber : 16;     //分组序列号，每当一个新的OLSR分组传送时，分组序列号必须增加1(个人认为是每个节点自己保存独立的序列号)
         vector<message_packet> messagePackets;      //消息
     };
 
@@ -66,65 +93,61 @@ namespace opnet
     //本地链路信息表
     struct local_link
     {
-        unsigned int L_local_iface_addr;
-        unsigned int L_neighbor_iface_addr;
-        unsigned int L_SYM_time;
-        unsigned int L_ASYM_time;
-        unsigned int L_time;
+        unsigned int L_local_iface_addr;            //本地节点的接口地址
+        unsigned int L_neighbor_iface_addr;         //邻节点的接口地址
+        unsigned int L_SYM_time;                    //直到此时刻前。链路被认为是对称的
+        unsigned int L_ASYM_time;                   //直到此时刻前，链路被认为是单向的
+        unsigned int L_time;                        //链路维护时刻。链路在此时刻失效，必须被删除
     };  
 
     //邻居表
     struct one_hop_neighbor
     {
-        unsigned int N_neighbor_main_addr;
-        unsigned int N_statusl;
-        unsigned int N_willingness;
+        unsigned int N_neighbor_main_addr;          //节点i的一跳邻居地址
+        unsigned int N_status;                      //节点i与其一跳邻居之间的链路状态
+        unsigned int N_willingness;                 //表示邻居节点为其他节点转发分组的意愿程度
     };
     
     //两跳邻居表
     struct two_hop_neighbor
     {
-        unsigned int N_neighbor_main_addr;
-        unsigned int N_2hop_addr;
-        unsigned int N_time;
+        unsigned int N_neighbor_main_addr;          //表示邻节点的地址
+        unsigned int N_2hop_addr;                   //表示与N_neighbor_main_addr有对称链路的两跳节点的地址
+        unsigned int N_time;                        //表示表项到期必须被移除的时间
     };
     
     //MPR Selector表
     struct MPR_table
     {
-        unsigned int MS_main_addr;
-        unsigned int MS_time;
+        unsigned int MS_main_addr;                  //MPR Selector节点的地址
+        unsigned int MS_time;                       //该MPR Selector集表项的保持时间，当MPR Select过期时要及时删除
     };
     
     //TC分组重复记录表
     struct TC_repeat_table
     {
-        unsigned int D_addr;
-        unsigned int D_seq_num;
-        unsigned int D_retransmitted;
-        unsigned int D_iface_list;
-        unsigned int D_time;
+        unsigned int D_addr;                        //最初发送该分组的节点的地址
+        unsigned int D_seq_num;                     //TC分组的序列号，用于区分新旧TC分组
+        unsigned int D_retransmitted;               //为一个布尔值，用来表示此消息是否被重传过
+        unsigned int D_iface_list;                  //这个消息被接收的接口地址列表
+        unsigned int D_time;                        //该表项的保持时间，表项到期时必须被删除
     };
     
     //拓扑表
     struct topology_table
     {
-        unsigned int T_dest_addr;
-        unsigned int T_last_addr;
-        unsigned int T_seq;
-        unsigned int T_time;
+        unsigned int T_dest_addr;                   //MPR选择节点的地址，表示该节点已经选择节点T_last作为其MPR
+        unsigned int T_last_addr;                   //被T_last选为MPR的节点的地址
+        unsigned int T_seq;                         //表示T_last已经发布了它保存的序列号为T_seq的MPR Selector集合的控制信息
+        unsigned int T_time;                        //表项的保持时间，到期后就失效，必须被删除
     };
     
     //路由表
     struct route_table
     {
-        unsigned int R_dest_addr;
-        unsigned int R_next_addr;
-        unsigned int R_dist;
-        unsigned int R_iface_addr;
+        unsigned int R_dest_addr;                   //路由目的节点地址
+        unsigned int R_next_addr;                   //路由的下一跳地址
+        unsigned int R_dist;                        //本节点到目的节点的距离
+        unsigned int R_iface_addr;                  //表示下一跳节点通过本地接口R_iface_addr到达
     };
-    
-    
-    
-
 } // namespace opnet
