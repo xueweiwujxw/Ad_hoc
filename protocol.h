@@ -68,15 +68,7 @@ namespace opnet
         message_tc() {
             this->reserved = 0;
         }
-    };
-
-    //message(HELLO, TC)
-    union message
-    {
-        message_tc mt;
-        message_hello mh;
-    };
-    
+    };    
 
     //message structure
     struct message_packet
@@ -88,7 +80,8 @@ namespace opnet
         unsigned int TTL : 8;                       //消息被传送的最大跳数，在消息被重传之前，TTL减一，当一个节点收到一个消息，其TTL为0或1时，这个消息在任何情况下都不应该被重传
         unsigned int hopCount : 8;                  //跳数，在一个消息被重传前，跳数加一
         unsigned int messageSequenceNumber : 16;    //消息的序列号
-        vector<message> messages;                   //MESSAGE域
+        message_hello helloMessage;                 //HELLO_MESSAGE域
+        message_tc tcMessage;                       //TC_MESSAGE域
     };
 
     //packet structure
@@ -128,14 +121,14 @@ namespace opnet
     };
     
     //MPR Selector表
-    struct MPR_table
+    struct MPR
     {
         unsigned int MS_main_addr;                  //MPR Selector节点的地址
         unsigned int MS_time;                       //该MPR Selector集表项的保持时间，当MPR Select过期时要及时删除
     };
     
     //TC分组重复记录表
-    struct TC_repeat_table
+    struct TC_repeat
     {
         unsigned int D_addr;                        //最初发送该分组的节点的地址
         unsigned int D_seq_num;                     //TC分组的序列号，用于区分新旧TC分组
@@ -145,7 +138,7 @@ namespace opnet
     };
     
     //拓扑表
-    struct topology_table
+    struct topology
     {
         unsigned int T_dest_addr;                   //MPR选择节点的地址，表示该节点已经选择节点T_last作为其MPR
         unsigned int T_last_addr;                   //被T_last选为MPR的节点的地址
@@ -154,7 +147,7 @@ namespace opnet
     };
     
     //路由表
-    struct route_table
+    struct route
     {
         unsigned int R_dest_addr;                   //路由目的节点地址
         unsigned int R_next_addr;                   //路由的下一跳地址

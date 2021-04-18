@@ -31,7 +31,7 @@ message_hello Adnode_ctrl::createHello() {
     link_status ls(SYM_LINK);
     link_status las(ASYM_LINK);
     link_status lmpr(MPR_LINK);
-    for (auto &i : this->oneHopNeighborTable) {
+    for (auto &i : this->oneHopNeighborTable.getTable()) {
         if (i.N_status == SYM_LINK)
             ls.neighborAddresses.push_back(i.N_neighbor_main_addr);
         else if (i.N_status == ASYM_LINK)
@@ -47,8 +47,8 @@ message_hello Adnode_ctrl::createHello() {
 
 message_tc Adnode_ctrl::createTC() {
     message_tc mt;
-    mt.MSSN = this->handleMprTable();
-    for (auto &i: this->mprTable)
+    mt.MSSN = this->createMprTable();
+    for (auto &i: this->mprTable.getTable())
         mt.MPRSelectorAddresses.push_back(i.MS_main_addr);
     return mt;
 }
@@ -56,36 +56,8 @@ message_tc Adnode_ctrl::createTC() {
 void Adnode_ctrl::recvMessage(void *data) {
     message_packet* messp = reinterpret_cast<message_packet *>(data);
     if (messp->messageType == HELLO) {
-        
+        message_hello messh = messp->helloMessage;
     } else if (messp->messageType == TC) {
-
+        message_tc messt = messp->tcMessage;
     }
-}
-
-void Adnode_ctrl::handleLocalLinkTable() {
-
-}
-
-void Adnode_ctrl::handleOneHopNeighborTable() {
-    
-}
-
-void Adnode_ctrl::handleTwoHopNeighborTable() {
-    
-}
-
-unsigned int Adnode_ctrl::handleMprTable() {
-    
-}
-
-void Adnode_ctrl::handleTcRepeatTable() {
-    
-}
-
-void Adnode_ctrl::handleTopologyTable() {
-    
-}
-
-void Adnode_ctrl::handleRouteTable() {
-    
 }

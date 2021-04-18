@@ -3,6 +3,7 @@
 #include <protocol.h>
 #include <iostream>
 #include <vector>
+#include <table_manager.hpp>
 
 using namespace std;
 
@@ -13,13 +14,13 @@ namespace opnet
     private:
         unsigned int nodeId;
         vector<unsigned int> portId;
-        vector<local_link> localLinkTable;
-        vector<one_hop_neighbor> oneHopNeighborTable;
-        vector<two_hop_neighbor> twoHopNeighborTable;
-        vector<MPR_table> mprTable;
-        vector<TC_repeat_table> tcRepeatTable;
-        vector<topology_table> topologyTable;
-        vector<route_table> routeTable;
+        local_link_table localLinkTable;
+        one_hop_neighbor_table oneHopNeighborTable;
+        two_hop_neighbor_table twoHopNeighborTable;
+        mpr_table mprTable;
+        tc_repeat_table tcRepeatTable;
+        topology_table topologyTable;
+        route_table routeTable;
     public:
         Adnode_ctrl();
         ~Adnode_ctrl();
@@ -30,13 +31,10 @@ namespace opnet
         message_hello createHello();
         message_tc createTC();
         void recvMessage(void *data);
-        void handleLocalLinkTable();
-        void handleOneHopNeighborTable();
-        void handleTwoHopNeighborTable();
-        unsigned int handleMprTable();
-        void handleTcRepeatTable();
-        void handleTopologyTable();
-        void handleRouteTable();
+        unsigned int createMprTable();
     };
+
+    
+        
 
 } // namespace opnet

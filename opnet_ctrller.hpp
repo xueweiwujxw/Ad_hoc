@@ -1,4 +1,5 @@
 #pragma once
+#include <Adnode_ctrl.hpp>
 
 namespace opnet {
     // class opnet_ctrller
