@@ -1,19 +1,46 @@
 #pragma once
 
-#include <vector>
+#include <set>
 
 using namespace std;
 
 namespace opnet
 {
+    int HELLO_INTERVAL = 2;
+    int REFERSH_INTERVAL = 2;
+    int TC_INTERVAL = 5;
+    int MID_INTERVAL = TC_INTERVAL;
+    int HNA_INTERVAL = TC_INTERVAL;
+    int NEIGHB_HOLD_TIME = 3 * REFERSH_INTERVAL;
+    int TOP_HOLD_TIME = 3 * TC_INTERVAL;
+    int DUP_HOLD_TIME = 30;
+    int MID_HOLD_TME = 3 * MID_INTERVAL;
+    int HNA_HOLD_TIME = 3 * HNA_INTERVAL;
+
+
     /*协议分组基本格式*/
 
     //Link code
     enum Linkcode
     {
+        UNSPEC_LINK,
         ASYM_LINK,      //链路非对称
         SYM_LINK,       //链路对称
-        MPR_LINK        //表中节点被HELLO message的发送节点选为MPR
+        MPR_LINK,       //表中节点被HELLO message的发送节点选为MPR
+        LOST_LINK      //链路中断
+    };
+
+    enum Neighborcode
+    {
+        SYM_NEIGH,
+        MPR_NEIGH,
+        NOT_NEIGH
+    };
+
+    enum NeighType
+    {
+        NOT_SYM,
+        SYM 
     };
 
     //Willingness
@@ -36,24 +63,26 @@ namespace opnet
     //link status
     struct link_status
     {
-        unsigned int linkcode : 8;                  //链路类型
-        unsigned int reserved : 8;                 //保留字段：0000_0000
+        unsigned int linkcode : 4;                  //链路类型
+        unsigned int neighcode: 4;
+        unsigned int reserved : 8;                  //保留字段：0000_0000
         unsigned int linkMessageSize: 16;           //本链路消息的大小，从链路类型字段开始直到下一个链路类型字段之前(若无，则到分组结尾)
-        vector<unsigned int> neighborAddresses;     //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
+        unsigned int neighborAddress;               //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
         link_status(Linkcode lc) {
             this->reserved = 0;
             this->linkcode = lc;
         }
+        link_status() {}
     };
     
 
     //hello message，执行链路检测、邻居发现的功能
     struct message_hello
     {
-        unsigned int reserved : 16;                //保留字段：0000_0000_0000_0000
+        unsigned int reserved : 16;                 //保留字段：0000_0000_0000_0000
         unsigned int hTime : 8;                     //HELLO发送时间间隔
         unsigned int willingness : 8;               //一个节点为其他节点携带网络流量的意愿
-        vector<link_status> linkMessage;
+        set<link_status> linkMessage;
         message_hello() {
             this->reserved = 0;
         }
@@ -64,7 +93,7 @@ namespace opnet
     {
         unsigned int MSSN : 16;                     //MPR Selector序列号
         unsigned int reserved : 16;                 //保留字段0000_0000_0000_0000
-        vector<unsigned int> MPRSelectorAddresses;  //多点中继选择的地址
+        set<unsigned int> MPRSelectorAddresses;  //多点中继选择的地址
         message_tc() {
             this->reserved = 0;
         }
@@ -89,7 +118,7 @@ namespace opnet
     {
         unsigned int packetLength : 16;             //分组长度，以bytes计
         unsigned int packetSequenceNumber : 16;     //分组序列号，每当一个新的OLSR分组传送时，分组序列号必须增加1(个人认为是每个节点自己保存独立的序列号)
-        vector<message_packet> messagePackets;      //消息
+        set<message_packet> messagePackets;      //消息
     };
 
     /*节点保存的信息表*/
@@ -128,12 +157,12 @@ namespace opnet
     };
     
     //TC分组重复记录表
-    struct TC_repeat
+    struct duplicate_set
     {
         unsigned int D_addr;                        //最初发送该分组的节点的地址
-        unsigned int D_seq_num;                     //TC分组的序列号，用于区分新旧TC分组
-        unsigned int D_retransmitted;               //为一个布尔值，用来表示此消息是否被重传过
-        unsigned int D_iface_list;                  //这个消息被接收的接口地址列表
+        unsigned int D_seq_num;                     //分组的序列号，用于区分新旧分组
+        bool D_retransmitted;                       //为一个布尔值，用来表示此消息是否被重传过
+        bool D_received;                            //已经接收
         unsigned int D_time;                        //该表项的保持时间，表项到期时必须被删除
     };
     

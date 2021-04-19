@@ -26,38 +26,53 @@ void Adnode_ctrl::stop() {
 
 message_hello Adnode_ctrl::createHello() {
     message_hello mh;
-    mh.hTime = 2;
-    mh.willingness = WILL_DEFAULT;
-    link_status ls(SYM_LINK);
-    link_status las(ASYM_LINK);
-    link_status lmpr(MPR_LINK);
-    for (auto &i : this->oneHopNeighborTable.getTable()) {
-        if (i.N_status == SYM_LINK)
-            ls.neighborAddresses.push_back(i.N_neighbor_main_addr);
-        else if (i.N_status == ASYM_LINK)
-            las.neighborAddresses.push_back(i.N_neighbor_main_addr);
-        else if (i.N_status == MPR_LINK)
-            lmpr.neighborAddresses.push_back(i.N_neighbor_main_addr);
-    }
-    ls.linkMessageSize = 4 + 4 * ls.neighborAddresses.size();
-    las.linkMessageSize = 4 + 4 * las.neighborAddresses.size();
-    lmpr.linkMessageSize = 4 + 4 * lmpr.neighborAddresses.size();
+    for (auto &i : this->localLinkTable) {
+        Linkcode lc;
+        Neighborcode nc;
+        if (i.L_SYM_time >= op_sim_time()) lc = SYM_LINK;
+        else if (i.L_ASYM_time >= op_sim_time()) lc = ASYM_LINK;
+        else lc = LOST_LINK;
+        bool inmpr = false, inneigh = false;
+        unsigned int nt;
+        for (auto &j : this->mprTable)
+            if (j.MS_main_addr == i.L_neighbor_iface_addr) {
+                inmpr = true;
+                break;
+            }
+        for (auto &j : this->oneHopNeighborTable)
+            if (j.N_neighbor_main_addr == i.L_neighbor_iface_addr) {
+                nt = j.N_status;
+                inneigh = true;
+                break;
+            }
+        if (inmpr) nc = MPR_NEIGH;
+        else if (inneigh && nt == SYM) nc = SYM_NEIGH;
+        else if (inneigh && nt == NOT_SYM) nc = NOT_NEIGH;
+        else if (!inneigh) {
+            lc = UNSPEC_LINK;
+            nc = NOT_NEIGH;
+        }
+    } 
     return mh;
 }
 
 message_tc Adnode_ctrl::createTC() {
-    message_tc mt;
-    mt.MSSN = this->createMprTable();
-    for (auto &i: this->mprTable.getTable())
-        mt.MPRSelectorAddresses.push_back(i.MS_main_addr);
-    return mt;
+    
 }
 
-void Adnode_ctrl::recvMessage(void *data) {
-    message_packet* messp = reinterpret_cast<message_packet *>(data);
-    if (messp->messageType == HELLO) {
-        message_hello messh = messp->helloMessage;
-    } else if (messp->messageType == TC) {
-        message_tc messt = messp->tcMessage;
-    }
+void Adnode_ctrl::recvPacket(void *data) {
+    
+}
+
+void Adnode_ctrl::forward(set<message_packet> needToForward) {
+    
+}
+
+void Adnode_ctrl::handleHello(message_packet mh) {
+    // 更新链路信息表
+    
+}
+
+void Adnode_ctrl::handleTc(message_packet mt) {
+    
 }

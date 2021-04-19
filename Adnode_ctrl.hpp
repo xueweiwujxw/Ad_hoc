@@ -3,7 +3,8 @@
 #include <protocol.h>
 #include <iostream>
 #include <vector>
-#include <table_manager.hpp>
+#include <set>
+
 
 using namespace std;
 
@@ -13,25 +14,28 @@ namespace opnet
     {
     private:
         unsigned int nodeId;
-        vector<unsigned int> portId;
-        local_link_table localLinkTable;
-        one_hop_neighbor_table oneHopNeighborTable;
-        two_hop_neighbor_table twoHopNeighborTable;
-        mpr_table mprTable;
-        tc_repeat_table tcRepeatTable;
-        topology_table topologyTable;
-        route_table routeTable;
+        set<local_link> localLinkTable;
+        set<one_hop_neighbor> oneHopNeighborTable;
+        set<two_hop_neighbor> twoHopNeighborTable;
+        set<MPR> mprTable;
+        set<duplicate_set> repeatTable;
+        set<topology> topologyTable;
+        set<route> routeTable;
     public:
         Adnode_ctrl();
         ~Adnode_ctrl();
         int run();
         void start();
         void stop();
+        void send(message_packet ms);
     protected:
         message_hello createHello();
         message_tc createTC();
-        void recvMessage(void *data);
+        void recvPacket(void *data);
+        void forward(set<message_packet> needToForward);
         unsigned int createMprTable();
+        void handleHello(message_packet mh);
+        void handleTc(message_packet mt);
     };
 
     
