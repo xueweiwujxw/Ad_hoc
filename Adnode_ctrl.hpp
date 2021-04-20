@@ -22,6 +22,8 @@ namespace opnet
         set<topology> topologyTable;
         set<route> routeTable;
         unsigned int MSSN;
+        unsigned int messageSequenceNumber;
+        unsigned int packetSequenceNumber;
     public:
         Adnode_ctrl();
         ~Adnode_ctrl();
@@ -32,6 +34,7 @@ namespace opnet
     protected:
         message_hello createHello();
         message_tc createTC();
+        olsr_packet createPacket(bool helloEnable, bool tcEnable);
         void recvPacket(void *data);
         void forward(set<message_packet> needToForward);
         unsigned int createMprTable();

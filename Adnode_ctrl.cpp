@@ -7,6 +7,8 @@ using namespace opnet;
 Adnode_ctrl::Adnode_ctrl() {
     this->nodeId = op_node_id();
     this->MSSN = 0;
+    this->messageSequenceNumber = 0;
+    this->packetSequenceNumber = 0;
 }
 
 Adnode_ctrl::~Adnode_ctrl() {
@@ -107,6 +109,46 @@ message_tc Adnode_ctrl::createTC() {
             mt.MPRSelectorAddresses.insert(i.MS_main_addr);
         return mt;
     }
+}
+
+olsr_packet Adnode_ctrl::createPacket(bool helloEnable, bool tcEnable) {
+    olsr_packet olsrp;
+    olsrp.packetSequenceNumber = this->packetSequenceNumber;
+    this->packetSequenceNumber = (this->packetSequenceNumber + 1) % 65536;
+    if (helloEnable) {
+        message_hello mh = this->createHello();
+        message_packet mp;
+        mp.messageType = HELLO;
+        mp.vTime = HELLO_VALIDITY_TIME;
+        mp.messageSize = 4 + 4 + 4 + 4;
+        for (auto &i : mh.linkMessage)
+            mp.messageSize += i.linkMessageSize;
+        mp.originatorAddress = this->nodeId;
+        mp.TTL = NODE_COUNT;
+        mp.hopCount = 0;
+        mp.messageSequenceNumber = this->messageSequenceNumber;
+        this->messageSequenceNumber = (this->messageSequenceNumber + 1) % 65536;
+        mp.helloMessage = mh;
+        olsrp.messagePackets.insert(mp);
+    }
+    if (tcEnable) {
+        message_tc mt = this->createTC();
+        message_packet mp;
+        mp.messageType = TC;
+        mp.vTime = TC_VALIDITY_TIME;
+        mp.messageSize = 4 + 4 + 4 + 4 + mt.MPRSelectorAddresses.size() * 4;
+        mp.originatorAddress = this->nodeId;
+        mp.TTL = NODE_COUNT;
+        mp.hopCount = 0;
+        mp.messageSequenceNumber = this->messageSequenceNumber;
+        this->messageSequenceNumber = (this->messageSequenceNumber + 1) % 65536;
+        mp.tcMessage = mt;
+        olsrp.messagePackets.insert(mp);
+    }
+    olsrp.packetLength = 4;
+    for (auto &i : olsrp.messagePackets)
+        olsrp.packetLength += i.messageSize;
+    return olsrp;
 }
 
 void Adnode_ctrl::recvPacket(void *data) {

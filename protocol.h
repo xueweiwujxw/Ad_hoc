@@ -6,16 +6,19 @@ using namespace std;
 
 namespace opnet
 {
-    int HELLO_INTERVAL = 2;
-    int REFERSH_INTERVAL = 2;
-    int TC_INTERVAL = 5;
-    int MID_INTERVAL = TC_INTERVAL;
-    int HNA_INTERVAL = TC_INTERVAL;
-    int NEIGHB_HOLD_TIME = 3 * REFERSH_INTERVAL;
-    int TOP_HOLD_TIME = 3 * TC_INTERVAL;
-    int DUP_HOLD_TIME = 30;
-    int MID_HOLD_TME = 3 * MID_INTERVAL;
-    int HNA_HOLD_TIME = 3 * HNA_INTERVAL;
+#define HELLO_INTERVAL 2;
+#define REFERSH_INTERVAL 2;
+#define TC_INTERVAL 5;
+#define MID_INTERVAL TC_INTERVAL;
+#define HNA_INTERVAL TC_INTERVAL;
+#define NEIGHB_HOLD_TIME  3 * REFERSH_INTERVAL;
+#define TOP_HOLD_TIME 3 * TC_INTERVAL;
+#define DUP_HOLD_TIME 30;
+#define MID_HOLD_TME 3 * MID_INTERVAL;
+#define HNA_HOLD_TIME 3 * HNA_INTERVAL;
+#define NODE_COUNT 40;
+#define HELLO_VALIDITY_TIME 20;
+#define TC_VALIDITY_TIME 30;
 
 
     /*协议分组基本格式*/
