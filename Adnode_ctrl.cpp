@@ -1,5 +1,7 @@
 #pragma once
 #include <Adnode_ctrl.hpp>
+#include <set>
+#include <map>
 
 using namespace std;
 using namespace opnet;
@@ -244,10 +246,43 @@ void Adnode_ctrl::handleHello(message_packet mh) {
     for (auto &i : this->oneHopNeighborTable) {
         if (i.N_neighbor_main_addr == mh.originatorAddress)
             i.N_willingness = mh.helloMessage.willingness;
+    }    
+}
+
+unsigned int Adnode_ctrl::createMprTable() {
+    set<unsigned int> N;
+    set<unsigned int> N2;
+    map<unsigned int, set<unsigned int>> N_neghbor;
+    map<unsigned int, int> dy;
+    for (auto &i : this->oneHopNeighborTable) {
+        N.insert(i.N_neighbor_main_addr);
+        set<unsigned int> tmp;
+        N_neghbor.insert(make_pair(i.N_neighbor_main_addr, tmp));
     }
-    // 更新两跳邻居表
-    // 更新MPR
-    
+    for (auto &i : this->twoHopNeighborTable) {
+        N2.insert(i.N_2hop_addr);
+        map<unsigned int, set<unsigned int>>::iterator it;
+        it = N_neghbor.find(i.N_neighbor_main_addr);
+        if (it != N_neghbor.end()) {
+            set<unsigned int> tmp = it->second;
+            tmp.insert(i.N_2hop_addr);
+            it->second = tmp;
+        }            
+    }
+    // 计算D(y)
+    for (auto &i : N) {
+        auto it = N_neghbor.find(i);
+        int count = it->second.size();
+        if (it->second.find(this->nodeId) != it->second.end())
+            count--;
+        for (auto &j : N)
+            if (it->second.find(j) != it->second.end())
+                count--;
+        dy.insert(make_pair(i, count));
+    }
+    while(!N2.empty()) {
+        
+    }
 }
 
 void Adnode_ctrl::handleTc(message_packet mt) {
