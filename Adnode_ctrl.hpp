@@ -3,7 +3,6 @@
 #include <protocol.h>
 #include <iostream>
 #include <vector>
-#include <set>
 
 
 using namespace std;
@@ -14,13 +13,13 @@ namespace opnet
     {
     private:
         unsigned int nodeId;
-        set<local_link> localLinkTable;
-        set<one_hop_neighbor> oneHopNeighborTable;
-        set<two_hop_neighbor> twoHopNeighborTable;
-        set<MPR> mprTable;
-        set<duplicate_set> repeatTable;
-        set<topology> topologyTable;
-        set<route> routeTable;
+        vector<local_link> localLinkTable;
+        vector<one_hop_neighbor> oneHopNeighborTable;
+        vector<two_hop_neighbor> twoHopNeighborTable;
+        vector<MPR> mprTable;
+        vector<duplicate_set> repeatTable;
+        vector<topology> topologyTable;
+        vector<route> routeTable;
         unsigned int MSSN;
         unsigned int messageSequenceNumber;
         unsigned int packetSequenceNumber;
@@ -36,7 +35,7 @@ namespace opnet
         message_tc createTC();
         olsr_packet createPacket(bool helloEnable, bool tcEnable);
         void recvPacket(void *data);
-        void forward(set<message_packet> needToForward);
+        void forward(vector<message_packet> needToForward);
         unsigned int createMprTable();
         void handleHello(message_packet mh);
         void handleTc(message_packet mt);

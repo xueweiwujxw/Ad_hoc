@@ -90,7 +90,7 @@ message_hello Adnode_ctrl::createHello() {
     for (int i = 0; i < 15; ++i) {
         if (!links[i].neighborAddress.empty()) {
             links[i].linkMessageSize = 4 + 4 * links[i].neighborAddress.size();
-            mh.linkMessage.insert(links[i]);
+            mh.linkMessage.push_back(links[i]);
         }
     }
     // willingness 可以在之后动态修改
@@ -106,7 +106,7 @@ message_tc Adnode_ctrl::createTC() {
         return mt;
     else {
         for (auto &i : this->mprTable)
-            mt.MPRSelectorAddresses.insert(i.MS_main_addr);
+            mt.MPRSelectorAddresses.push_back(i.MS_main_addr);
         return mt;
     }
 }
@@ -129,7 +129,7 @@ olsr_packet Adnode_ctrl::createPacket(bool helloEnable, bool tcEnable) {
         mp.messageSequenceNumber = this->messageSequenceNumber;
         this->messageSequenceNumber = (this->messageSequenceNumber + 1) % 65536;
         mp.helloMessage = mh;
-        olsrp.messagePackets.insert(mp);
+        olsrp.messagePackets.push_back(mp);
     }
     if (tcEnable) {
         message_tc mt = this->createTC();
@@ -143,7 +143,7 @@ olsr_packet Adnode_ctrl::createPacket(bool helloEnable, bool tcEnable) {
         mp.messageSequenceNumber = this->messageSequenceNumber;
         this->messageSequenceNumber = (this->messageSequenceNumber + 1) % 65536;
         mp.tcMessage = mt;
-        olsrp.messagePackets.insert(mp);
+        olsrp.messagePackets.push_back(mp);
     }
     olsrp.packetLength = 4;
     for (auto &i : olsrp.messagePackets)
@@ -155,12 +155,98 @@ void Adnode_ctrl::recvPacket(void *data) {
     
 }
 
-void Adnode_ctrl::forward(set<message_packet> needToForward) {
+void Adnode_ctrl::forward(vector<message_packet> needToForward) {
     
 }
 
 void Adnode_ctrl::handleHello(message_packet mh) {
+    if (mh.messageType != HELLO) {
+        cout << "message type error" << endl;
+        return;
+    }
     // 更新链路信息表
+    bool inLinkTable = false;
+    for (auto &i : this->localLinkTable) {
+        if (i.L_neighbor_iface_addr == mh.originatorAddress) {
+            i.L_ASYM_time = op_sim_time() + mh.vTime;
+            for (auto &j : mh.helloMessage.linkMessage) {
+                for (auto &k : j.neighborAddress) {
+                    if (k == this->nodeId) {
+                        if (j.linkcode == LOST_LINK) {
+                            i.L_SYM_time = op_sim_time() - 1;
+                        }
+                        else if (j.linkcode == SYM_LINK || j.linkcode == ASYM_LINK) {
+                            i.L_SYM_time = op_sim_time() + mh.vTime;
+                            i.L_time = i.L_SYM_time + NEIGHB_HOLD_TIME;
+                        }
+                    }
+                }
+            }
+            i.L_time = max(i.L_time, i.L_ASYM_time);
+            inLinkTable = true;
+            // 更新一跳邻居表
+            for (auto &j : this->oneHopNeighborTable) {
+                if (j.N_neighbor_main_addr == mh.originatorAddress) {
+                    if (i.L_SYM_time >= op_sim_time())
+                        j.N_status = SYM;
+                    else j.N_status = NOT_SYM;
+                    break;
+                }
+            }
+            // 更新两跳邻居表
+            if (i.L_SYM_time >= op_sim_time()) {
+                for (auto &j : mh.helloMessage.linkMessage) {
+                    for (auto &k : j.neighborAddress) {
+                        if (j.neighcode == SYM_NEIGH || j.neighcode == MPR_NEIGH) {
+                            if (k != this->nodeId) {
+                                bool in2NeighborTable = false;
+                                for (auto &l: this->twoHopNeighborTable)
+                                    if (l.N_neighbor_main_addr == mh.originatorAddress && l.N_2hop_addr == k) {
+                                        in2NeighborTable = true;
+                                        l.N_time = op_sim_time() + mh.vTime;
+                                        break;
+                                    }
+                                if (!in2NeighborTable) {
+                                    two_hop_neighbor thnItem;
+                                    thnItem.N_neighbor_main_addr = mh.originatorAddress;
+                                    thnItem.N_2hop_addr = k;
+                                    thnItem.N_time = op_sim_time() + mh.vTime;
+                                    this->twoHopNeighborTable.push_back(thnItem);
+                                }
+                            }
+                        }
+                        else if (j.neighcode == NOT_NEIGH) {
+                            for (vector<two_hop_neighbor>::iterator l = this->twoHopNeighborTable.begin(); l != this->twoHopNeighborTable.end(); ++l) {
+                                if (l->N_neighbor_main_addr == mh.originatorAddress && l->N_2hop_addr == k)
+                                    this->twoHopNeighborTable.erase(l);
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+    if (!inLinkTable) {
+        local_link item;
+        item.L_local_iface_addr = this->nodeId;
+        item.L_neighbor_iface_addr = mh.originatorAddress;
+        item.L_SYM_time = op_sim_time() - 1;
+        item.L_time = op_sim_time() + mh.vTime;
+        item.L_ASYM_time = op_sim_time() + mh.vTime;    //这一部分协议中没有明确规定，推测是这种规则
+        this->localLinkTable.push_back(item);
+        // 创建一跳邻居表项
+        one_hop_neighbor ohnItem;
+        ohnItem.N_neighbor_main_addr = mh.originatorAddress;
+        this->oneHopNeighborTable.push_back(ohnItem);
+    }
+    // 更新一跳邻居表
+    for (auto &i : this->oneHopNeighborTable) {
+        if (i.N_neighbor_main_addr == mh.originatorAddress)
+            i.N_willingness = mh.helloMessage.willingness;
+    }
+    // 更新两跳邻居表
+    // 更新MPR
     
 }
 

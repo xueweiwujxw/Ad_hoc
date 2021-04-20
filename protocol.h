@@ -1,6 +1,5 @@
 #pragma once
 
-#include <set>
 #include <vector>
 
 using namespace std;
@@ -87,7 +86,7 @@ namespace opnet
         unsigned int reserved : 16;                 //保留字段：0000_0000_0000_0000
         unsigned int hTime : 8;                     //HELLO发送时间间隔
         unsigned int willingness : 8;               //一个节点为其他节点携带网络流量的意愿
-        set<link_status> linkMessage;
+        vector<link_status> linkMessage;
         message_hello() {
             this->reserved = 0;
         }
@@ -98,7 +97,7 @@ namespace opnet
     {
         unsigned int MSSN : 16;                     //MPR Selector序列号
         unsigned int reserved : 16;                 //保留字段0000_0000_0000_0000
-        set<unsigned int> MPRSelectorAddresses;  //多点中继选择的地址
+        vector<unsigned int> MPRSelectorAddresses;  //多点中继选择的地址
         message_tc() {
             this->reserved = 0;
         }
@@ -123,7 +122,7 @@ namespace opnet
     {
         unsigned int packetLength : 16;             //分组长度，以bytes计
         unsigned int packetSequenceNumber : 16;     //分组序列号，每当一个新的OLSR分组传送时，分组序列号必须增加1(个人认为是每个节点自己保存独立的序列号)
-        set<message_packet> messagePackets;      //消息
+        vector<message_packet> messagePackets;      //消息
     };
 
     /*节点保存的信息表*/
