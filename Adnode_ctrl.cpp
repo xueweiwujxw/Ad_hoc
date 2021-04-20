@@ -251,38 +251,46 @@ void Adnode_ctrl::handleHello(message_packet mh) {
 
 unsigned int Adnode_ctrl::createMprTable() {
     set<unsigned int> N;
-    set<unsigned int> N2;
+    map<unsigned int, set<unsigned int>> N2;
     map<unsigned int, set<unsigned int>> N_neghbor;
     map<unsigned int, int> dy;
-    for (auto &i : this->oneHopNeighborTable) {
+    set<unsigned int> mpr;
+
+    for (auto &i: this->oneHopNeighborTable) {
         N.insert(i.N_neighbor_main_addr);
+    }
+    
+    for (auto &i : this->oneHopNeighborTable) {
         set<unsigned int> tmp;
+        for (auto &j : this->twoHopNeighborTable) 
+            if (i.N_neighbor_main_addr == j.N_neighbor_main_addr && i.N_willingness != WILL_NEVER && j.N_2hop_addr != this->nodeId && N.find(j.N_2hop_addr) == N.end()) {
+                tmp.insert(j.N_2hop_addr);
+                if (N2.find(j.N_2hop_addr) == N2.end()) {
+                    set<unsigned int> oneNeighbor;
+                    oneNeighbor.insert(i.N_neighbor_main_addr);
+                    N2.insert(make_pair(j.N_2hop_addr, oneNeighbor));
+                }
+                else
+                    N2[j.N_2hop_addr].insert(i.N_neighbor_main_addr);
+            }
         N_neghbor.insert(make_pair(i.N_neighbor_main_addr, tmp));
     }
-    for (auto &i : this->twoHopNeighborTable) {
-        N2.insert(i.N_2hop_addr);
-        map<unsigned int, set<unsigned int>>::iterator it;
-        it = N_neghbor.find(i.N_neighbor_main_addr);
-        if (it != N_neghbor.end()) {
-            set<unsigned int> tmp = it->second;
-            tmp.insert(i.N_2hop_addr);
-            it->second = tmp;
-        }            
-    }
+    
     // 计算D(y)
-    for (auto &i : N) {
-        auto it = N_neghbor.find(i);
-        int count = it->second.size();
-        if (it->second.find(this->nodeId) != it->second.end())
-            count--;
-        for (auto &j : N)
-            if (it->second.find(j) != it->second.end())
-                count--;
-        dy.insert(make_pair(i, count));
+    for (auto &i : N_neghbor) {
+        int count = i.second.size();
+        dy.insert(make_pair(i.first, count));
     }
-    while(!N2.empty()) {
-        
+    
+    for(auto &i : N2) {
+        if (i.second.size() == 1) {
+            unsigned int mprN = *i.second.begin();
+            mpr.insert(mprN);
+            for (auto &k : N_neghbor[mprN])
+                N2.erase(k);
+        }
     }
+    
 }
 
 void Adnode_ctrl::handleTc(message_packet mt) {
