@@ -21,6 +21,7 @@ namespace opnet
         set<duplicate_set> repeatTable;
         set<topology> topologyTable;
         set<route> routeTable;
+        unsigned int MSSN;
     public:
         Adnode_ctrl();
         ~Adnode_ctrl();

@@ -6,6 +6,7 @@ using namespace opnet;
 
 Adnode_ctrl::Adnode_ctrl() {
     this->nodeId = op_node_id();
+    this->MSSN = 0;
 }
 
 Adnode_ctrl::~Adnode_ctrl() {
@@ -97,7 +98,15 @@ message_hello Adnode_ctrl::createHello() {
 }
 
 message_tc Adnode_ctrl::createTC() {
-    
+    message_tc mt;
+    mt.MSSN = this->MSSN;
+    if (this->mprTable.empty())
+        return mt;
+    else {
+        for (auto &i : this->mprTable)
+            mt.MPRSelectorAddresses.insert(i.MS_main_addr);
+        return mt;
+    }
 }
 
 void Adnode_ctrl::recvPacket(void *data) {
