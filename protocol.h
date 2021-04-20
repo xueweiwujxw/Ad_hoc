@@ -67,10 +67,11 @@ namespace opnet
         unsigned int neighcode: 4;
         unsigned int reserved : 8;                  //保留字段：0000_0000
         unsigned int linkMessageSize: 16;           //本链路消息的大小，从链路类型字段开始直到下一个链路类型字段之前(若无，则到分组结尾)
-        unsigned int neighborAddress;               //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
-        link_status(Linkcode lc) {
+        vector<unsigned int> neighborAddress;               //邻居地址列表，HELLO的发送节点到邻居列表的所有链路均为前面的类型
+        link_status(Linkcode lc, Neighborcode nc) {
             this->reserved = 0;
             this->linkcode = lc;
+            this->neighcode = nc;
         }
         link_status() {}
     };
