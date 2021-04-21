@@ -282,15 +282,49 @@ unsigned int Adnode_ctrl::createMprTable() {
         dy.insert(make_pair(i.first, count));
     }
     
-    for(auto &i : N2) {
-        if (i.second.size() == 1) {
-            unsigned int mprN = *i.second.begin();
-            mpr.insert(mprN);
-            for (auto &k : N_neghbor[mprN])
-                N2.erase(k);
+    while (true) {
+        // 在N2中选择唯一可达的点，将其对应的N加入MPR，删除N2中被MPR覆盖的点
+        for(auto &i : N2) {
+            if (i.second.size() == 1) {
+                unsigned int mprN = *i.second.begin();
+                mpr.insert(mprN);
+                for (auto &k : N_neghbor[mprN])
+                    N2.erase(k);
+                N_neghbor.erase(mprN);
+            }
         }
+        // N2被全覆盖，则完成搜索
+        if (N2.empty())
+            break;
+        else {
+            // 从N中选择可达性最小的点，并将其删除
+            unsigned int min = INT_MAX;
+            unsigned int order;
+            for (auto &k: N_neghbor) {
+                unsigned int count = 0;
+                for (auto &l : k.second) 
+                    if (N2.find(l) != N2.end())
+                        count++;
+                if (count < min) {
+                    min = count;
+                    order = k.first;
+                }
+            }
+            // 删除前需要将N2中记录的邻接关系删除
+            for (auto &k : N_neghbor[order]) {
+                map<unsigned int, set<unsigned int>>::iterator it = N2.find(k);
+                if (it != N2.end())
+                    it->second.erase(k);
+            }
+            N_neghbor.erase(order);
+        }
+    } 
+    for (auto &i : mpr) {
+        MPR mprItem;
+        mprItem.MS_main_addr = i;
+        this->mprTable.push_back(mprItem);
     }
-    
+    return this->mprTable.size();
 }
 
 void Adnode_ctrl::handleTc(message_packet mt) {
