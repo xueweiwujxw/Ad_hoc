@@ -39,6 +39,7 @@ namespace opnet
         unsigned int createMprTable();
         void handleHello(message_packet mh);
         void handleTc(message_packet mt);
+        void createRouteTable();
     };
 
     

@@ -137,10 +137,10 @@ olsr_packet Adnode_ctrl::createPacket(bool helloEnable, bool tcEnable) {
         message_tc mt = this->createTC();
         message_packet mp;
         mp.messageType = TC;
-        mp.vTime = TC_VALIDITY_TIME;
+        mp.vTime = TOP_HOLD_TIME;
         mp.messageSize = 4 + 4 + 4 + 4 + mt.MPRSelectorAddresses.size() * 4;
         mp.originatorAddress = this->nodeId;
-        mp.TTL = NODE_COUNT;
+        mp.TTL = 255;
         mp.hopCount = 0;
         mp.messageSequenceNumber = this->messageSequenceNumber;
         this->messageSequenceNumber = (this->messageSequenceNumber + 1) % 65536;
@@ -246,7 +246,23 @@ void Adnode_ctrl::handleHello(message_packet mh) {
     for (auto &i : this->oneHopNeighborTable) {
         if (i.N_neighbor_main_addr == mh.originatorAddress)
             i.N_willingness = mh.helloMessage.willingness;
-    }    
+    }   
+    
+    for (auto &i : mh.helloMessage.linkMessage) {
+        if (i.neighcode == MPR_NEIGH) {
+            bool inMpr = false;
+            for (auto &j : this->mprTable)
+                if (j.MS_main_addr == mh.originatorAddress) {
+                    inMpr = true;
+                    j.MS_time = op_sim_time() + mh.vTime;
+                }
+            if (!inMpr) {
+                MPR mprItem;
+                mprItem.MS_main_addr = mh.originatorAddress;
+                this->mprTable.push_back(mprItem);
+            }
+        }
+    }
 }
 
 unsigned int Adnode_ctrl::createMprTable() {
@@ -328,5 +344,34 @@ unsigned int Adnode_ctrl::createMprTable() {
 }
 
 void Adnode_ctrl::handleTc(message_packet mt) {
+    for (vector<topology>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it) {
+        if (it->T_last_addr == mt.originatorAddress) {
+            if (it->T_seq < mt.tcMessage.MSSN)
+                this->topologyTable.erase(it);
+        }
+    }
+    for (auto &i : mt.tcMessage.MPRSelectorAddresses) {
+        bool inTopo = false;
+        for (auto &j : this->topologyTable) {
+            if (j.T_dest_addr == i && j.T_last_addr == mt.originatorAddress) {
+                j.T_time = op_sim_time() + mt.vTime;
+                inTopo = true;
+                break;
+            }
+        }
+        if (!inTopo) {
+            topology topoItem;
+            topoItem.T_dest_addr = i;
+            topoItem.T_last_addr = mt.originatorAddress;
+            topoItem.T_seq = mt.tcMessage.MSSN;
+            topoItem.T_time = op_sim_time() + mt.vTime;
+            this->topologyTable.push_back(topoItem);
+        }
+    }
+}
+
+void Adnode_ctrl::createRouteTable() {
+    this->routeTable.clear();
+    
     
 }
