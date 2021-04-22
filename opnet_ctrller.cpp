@@ -11,6 +11,7 @@ opnet_ctrller::opnet_ctrller() {
     this->packetSequence = 0;
     this->packetCount = 0;
     this->isrunning = false;
+    this->resId = 0;
 }
 opnet_ctrller::~opnet_ctrller() { 
     // cout << "~opnet_ctrller" << endl;
@@ -38,11 +39,16 @@ void opnet_ctrller::send(void *data, unsigned int len) {
     
     // op_pk_bcast_general (p);
     op_pk_send(p, 0);
-    cout << "node " << op_node_id() << " sent a packet" << endl;
+    // printf("current time: %.6fs. ", op_sim_time());
+    // cout << "node " << op_node_id() << " sent a packet" << endl;
+    nodePackets* np = reinterpret_cast<nodePackets*>(data);
+    results item(this->resId, op_sim_time(), "SEND", np->origin, np->number, -1, -1, -1);
+    this->resId++;
+    this->res.push_back(item);
 }
 
 void opnet_ctrller::on_sim_start() {
-    cout << "this is node " << op_node_id() << " start." << endl;
+    cout << "node " << op_node_id() << " start at time : " << op_sim_time() << endl;
     // for (int i = 0; i < 5; ++i)
         // op_intrpt_schedule_self(op_sim_time(), 0);
     this->schedule_self();
@@ -59,21 +65,29 @@ void opnet_ctrller::on_self() {
     void *data = reinterpret_cast<void *>(np);
     unsigned int len = 8;
     this->packetSequence++;
-    cout << "current time: " << op_sim_time() << " ";
+    // cout << "current time: " << op_sim_time() << "s ";
+    // printf("current time: %.6fs. ", op_sim_time());
     this->send(data, len);
 }
 
 void opnet_ctrller::on_stream(int id) {
-    cout << "current time: " << op_sim_time() << " ";
+    // cout << "current time: " << op_sim_time() << "s ";
+    // printf("current time: %.6fs. ", op_sim_time());
     Packet *p = op_pk_get(id);
     int len = op_pk_total_size_get(p) / 8;
     nodePackets *np;
     void *buffer;
     op_pk_fd_get_ptr(p, 0, &buffer);
     np = reinterpret_cast<nodePackets*>(buffer);
-    cout << "node " << op_node_id() << " received packet: node->" << np->origin << " seq->" << np->number;
+    // cout << "node " << op_node_id() << " received packet: node->" << np->origin << " seq->" << np->number << "from stream " << id;
     this->packetCount++;
-    cout << ", packet size: " << len << endl;
+    // cout << ", packet size: " << len << endl;
+    // cout << "dist: " << op_td_get_dbl(p, OPC_TDA_RA_END_DIST) << endl;
+    // cout << "delay: " << op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL) << endl;
+    // cout << "BER: " << op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER) << endl;
+    results item(this->resId, op_sim_time(), "RECV", np->origin, np->number, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER));
+    this->resId++;
+    this->res.push_back(item);
     op_pk_destroy(p);
     // this->schedule_self();
     // cout << "simluation time: " << op_sim_time() << endl;
@@ -86,8 +100,17 @@ void opnet_ctrller::on_stat(int id) {
 }
 
 void opnet_ctrller::on_sim_stop() {
+    cout << "node " << op_node_id() << " stop at time : " << op_sim_time() << endl;
     this->isrunning = false;
     // m_future.wait();
     cout << "node " << op_node_id() << " received packets: " << this->packetCount << endl;
-    cout << "this is node " << op_node_id() << " end." << endl;
+    this->printRess();
+    // cout << "this is node " << op_node_id() << " end." << endl;
+}
+
+void opnet_ctrller::printRess() {
+    cout << "id   |time      |end/recv |ori       |seq       |dist      |delay     |BER     " << endl;
+    cout << "-----|----------|---------|----------|----------|----------|----------|--------" << endl;
+    for (auto &i : this->res)
+        i.printRes();
 }

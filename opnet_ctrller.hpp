@@ -1,6 +1,10 @@
 #pragma once
 #include <Adnode_ctrl.hpp>
 #include <future>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 namespace opnet {
     // class opnet_ctrller
@@ -15,6 +19,37 @@ namespace opnet {
     //     void on_stat(int);
     //     void on_sim_stop();
     // };  
+    class results
+    {
+    private:
+        double time;
+        char* behavior;
+        int origin;
+        int number;
+        double dist;
+        double delay;
+        double BER;
+        int id;
+    public:
+        results(int id, double time, char* behavior, int origin, int number, double dist, double delay, double BER) {
+            this->id = id;
+            this->time = time;
+            this->behavior = behavior;
+            this->origin = origin;
+            this->number = number;
+            this->dist = dist;
+            this->delay = delay;
+            this->BER = BER;
+        }
+        ~results() {}
+        void printRes() {
+            if (strcmp(behavior, "SEND") == 0)
+                printf("%-4d |%-9.6f |%-8s |%-9d |%-9d |%-9s |%-9s |%-9s\n", id, time, behavior, origin, number, "NAN", "NAN", "NAN");
+            else if (strcmp(behavior, "RECV") == 0)
+                printf("%-4d |%-9.6f |%-8s |%-9d |%-9d |%-9.3f |%-9.6f |%-9.6f\n",id, time, behavior, origin, number, dist, delay, BER);
+        }
+
+    };
     struct nodePackets
     {
         int number;
@@ -28,6 +63,8 @@ namespace opnet {
         int packetSequence;
         int isrunning;
         future<int> m_future;
+        vector<results> res;
+        int resId;
 
     public:
         opnet_ctrller();
@@ -40,5 +77,6 @@ namespace opnet {
         void schedule_self();
         int run();
         ~opnet_ctrller();
+        void printRess();
     };  
 }
