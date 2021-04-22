@@ -1,5 +1,6 @@
 #pragma once
 #include <Adnode_ctrl.hpp>
+#include <future>
 
 namespace opnet {
     // class opnet_ctrller
@@ -14,11 +15,19 @@ namespace opnet {
     //     void on_stat(int);
     //     void on_sim_stop();
     // };  
+    struct nodePackets
+    {
+        int number;
+        int origin;
+    };
     class opnet_ctrller
     {
     private:
         bool rx_blocked;
         int packetCount;
+        int packetSequence;
+        int isrunning;
+        future<int> m_future;
 
     public:
         opnet_ctrller();
@@ -27,8 +36,9 @@ namespace opnet {
         void on_stat(int);
         void on_sim_stop();
         void on_self();
-        void send();
+        void send(void *data, unsigned int len);
         void schedule_self();
+        int run();
         ~opnet_ctrller();
     };  
 }
