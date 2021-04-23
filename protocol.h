@@ -174,8 +174,8 @@ namespace opnet
     struct topology
     {
         unsigned int T_dest_addr;                   //MPR选择节点的地址，表示该节点已经选择节点T_last作为其MPR
-        unsigned int T_last_addr;                   //被T_last选为MPR的节点的地址
-        unsigned int T_seq;                         //表示T_last已经发布了它保存的序列号为T_seq的MPR Selector集合的控制信息
+        unsigned int T_last_addr;                   //被T_dest选为MPR的节点的地址
+        unsigned int T_seq;                         //表示T_dest已经发布了它保存的序列号为T_seq的MPR Selector集合的控制信息
         unsigned int T_time;                        //表项的保持时间，到期后就失效，必须被删除
     };
     
