@@ -42,7 +42,7 @@ void opnet_ctrller::send(void *data, unsigned int len) {
     // printf("current time: %.6fs. ", op_sim_time());
     // cout << "node " << op_node_id() << " sent a packet" << endl;
     nodePackets* np = reinterpret_cast<nodePackets*>(data);
-    results item(this->resId, op_sim_time(), "SEND", np->origin, np->number, -1, -1, -1);
+    results item(this->resId, op_sim_time(), "SEND", np->origin, np->number, -1, -1, -1, -1);
     this->resId++;
     this->res.push_back(item);
 }
@@ -85,7 +85,7 @@ void opnet_ctrller::on_stream(int id) {
     // cout << "dist: " << op_td_get_dbl(p, OPC_TDA_RA_END_DIST) << endl;
     // cout << "delay: " << op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL) << endl;
     // cout << "BER: " << op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER) << endl;
-    results item(this->resId, op_sim_time(), "RECV", np->origin, np->number, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER));
+    results item(this->resId, op_sim_time(), "RECV", np->origin, np->number, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR));
     this->resId++;
     this->res.push_back(item);
     op_pk_destroy(p);
@@ -109,8 +109,8 @@ void opnet_ctrller::on_sim_stop() {
 }
 
 void opnet_ctrller::printRess() {
-    cout << "id   |time      |send/recv |ori       |seq       |dist      |delay     |BER     " << endl;
-    cout << "-----|----------|----------|----------|----------|----------|----------|--------" << endl;
+    cout << "id   |time      |send/recv |ori       |seq       |dist      |delay     |BER       |SNR      " << endl;
+    cout << "-----|----------|----------|----------|----------|----------|----------|----------|---------" << endl;
     for (auto &i : this->res)
         i.printRes();
 }
