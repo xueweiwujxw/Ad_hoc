@@ -20,13 +20,13 @@ opnet_ctrller::~opnet_ctrller() {
 int opnet_ctrller::run() {
     while (this->isrunning) {
         // if (((int)op_sim_time()) % 3 == op_node_id())
-            this->schedule_self();
+            // this->schedule_self();
     }
     return 0;
 }
 
-void opnet_ctrller::schedule_self() {
-    op_intrpt_schedule_self(op_sim_time() + op_node_id(), 0);
+void opnet_ctrller::schedule_self(double interval) {
+    op_intrpt_schedule_self(op_sim_time() + op_node_id() + interval, 0);
 }
 
 void opnet_ctrller::send(void *data, unsigned int len) {
@@ -51,7 +51,7 @@ void opnet_ctrller::on_sim_start() {
     cout << "node " << op_node_id() << " start at time : " << op_sim_time() << endl;
     // for (int i = 0; i < 5; ++i)
         // op_intrpt_schedule_self(op_sim_time(), 0);
-    this->schedule_self();
+    this->schedule_self(0);
     this->isrunning = true;
     // m_future = async(&opnet_ctrller::run, this);
 
@@ -68,6 +68,7 @@ void opnet_ctrller::on_self() {
     // cout << "current time: " << op_sim_time() << "s ";
     // printf("current time: %.6fs. ", op_sim_time());
     this->send(data, len);
+    this->schedule_self(2);
 }
 
 void opnet_ctrller::on_stream(int id) {
@@ -79,15 +80,14 @@ void opnet_ctrller::on_stream(int id) {
     void *buffer;
     op_pk_fd_get_ptr(p, 0, &buffer);
     np = reinterpret_cast<nodePackets*>(buffer);
-    // cout << "node " << op_node_id() << " received packet: node->" << np->origin << " seq->" << np->number << "from stream " << id;
-    this->packetCount++;
-    // cout << ", packet size: " << len << endl;
-    // cout << "dist: " << op_td_get_dbl(p, OPC_TDA_RA_END_DIST) << endl;
-    // cout << "delay: " << op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL) << endl;
-    // cout << "BER: " << op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER) << endl;
-    results item(this->resId, op_sim_time(), "RECV", np->origin, np->number, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR));
-    this->resId++;
-    this->res.push_back(item);
+    if (np->origin != op_node_id()) {
+        results item(this->resId, op_sim_time(), "RECV", np->origin, np->number, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR));
+        this->resId++;
+        this->res.push_back(item);
+        this->packetCount++;
+    }
+    
+    
     op_pk_destroy(p);
     // this->schedule_self();
     // cout << "simluation time: " << op_sim_time() << endl;

@@ -76,7 +76,7 @@ namespace opnet {
         void on_sim_stop();
         void on_self();
         void send(void *data, unsigned int len);
-        void schedule_self();
+        void schedule_self(double);
         int run();
         ~opnet_ctrller();
         void printRess();
