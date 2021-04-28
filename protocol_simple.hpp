@@ -21,6 +21,13 @@ namespace opnet
         LOST_LINK
     };
 
+    enum NeighCode
+    {
+        NOT_NEIGH,
+        SYM_NEIGH,
+        MPR_NEIGH
+    };
+
     enum NeighbStatus
     {
         NOT_SYM,
@@ -36,6 +43,15 @@ namespace opnet
         WILL_ALWAYS
     };
 
+    enum LinkQuality
+    {
+        FATAL,
+        LOW,
+        DEFAULT,
+        HIGH,
+        PERFECT
+    };
+
     enum messageType
     {
         HELLO,
@@ -45,11 +61,22 @@ namespace opnet
 
     struct link_status
     {
-        UNINT linkcode : 16;
-        UNINT linkMessageSize : 16;
+        UNINT linkcode;
         vector<UNINT> neighborAddress;
         link_status(LinkCode lc) {
             this->linkcode = 0;
+        }
+        UNINT getSize() {
+            return 4 + 4 * this->neighborAddress.size();
+        }
+    };
+
+    struct neigh_status
+    {
+        UNINT neighcode;
+        vector<UNINT> neighborAddress;
+        neigh_status(NeighCode nc) {
+            this->neighcode = nc;
         }
         UNINT getSize() {
             return 4 + 4 * this->neighborAddress.size();
@@ -60,9 +87,12 @@ namespace opnet
     {
         UNINT willingness;
         vector<link_status> links;
+        vector<neigh_status> neighs;
         UNINT getSize() {
             UNINT count = 4;
             for (auto &i : this->links)
+                count += i.getSize();
+            for (auto &i : this->neighs)
                 count += i.getSize();
             return count;
         }
@@ -128,18 +158,18 @@ namespace opnet
         UNINT L_quality;
     };
 
+    struct two_hop_neighbor
+    {
+        UNINT N_2hop_addr;
+        UNINT N_time;
+    };
+    
     struct one_hop_neighbor
     {
         UNINT N_neighbor_addr;
         UNINT N_status;
         UNINT N_willingness;
         vector<two_hop_neighbor> N_2hop;
-    };
-
-    struct two_hop_neighbor
-    {
-        UNINT N_2hop_addr;
-        UNINT N_time;
     };
 
     struct MPR

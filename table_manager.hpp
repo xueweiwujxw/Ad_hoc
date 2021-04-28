@@ -1,6 +1,8 @@
 #pragma once
 #include <protocol_simple.hpp>
 #include <vector>
+#include <algorithm>
+#include <opnet.h>
 
 using namespace std;
 
@@ -23,9 +25,14 @@ namespace opnet
     public:
         table_manager(int nodeId) : MSSN(0), messageSequenceNumber(0), packetSequenceNumber(0), nodeId(nodeId) {}
         ~table_manager() {}
-        void updateLocalLink();
-        void updateOneHop();
-        void updateTwoHop();
+        void updateLocalLink(message_packet *mh);
         UNINT createMprTable(); 
+        void updateRepeatTable();
+        void updateTopologyTable(message_packet *mt);
+        void getRouteTable();
+        void freshTables();
+    protected:
+        void updateOneHop(message_packet *mh);
+        void updateTwoHop(message_packet *mh);
     };
 } // namespace opnet

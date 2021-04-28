@@ -7,6 +7,98 @@
 using namespace std;
 using namespace opnet;
 
+void table_manager::updateLocalLink(message_packet *mh) {
+    if (mh->messageType != HELLO)
+        return;
+    vector<local_link>::iterator it = find(this->localLinkTable.begin(), this->localLinkTable.end(), mh->originatorAddress);
+    if (it != this->localLinkTable.end()) {
+        local_link item;
+        item.L_neighbor_iface_addr = mh->originatorAddress;
+        item.L_SYM_time = op_sim_time() - 1;
+        item.L_time = op_sim_time() + mh->vTime;
+        item.L_ASYM_time = op_sim_time() + mh->vTime;
+        this->localLinkTable.push_back(item);
+    }
+    else {
+        it->L_ASYM_time = op_sim_time() + mh->vTime;
+        for (auto &i : mh->helloMessage.links) {
+            vector<UNINT>::iterator lit = find(i.neighborAddress.begin(), i.neighborAddress.end(), this->nodeId);
+            if (lit != i.neighborAddress.end() && i.linkcode == LOST_LINK)
+                it->L_SYM_time = op_sim_time() - 1;
+            else if (lit != i.neighborAddress.end() && (i.linkcode == SYM_LINK || i.linkcode == ASYM_LINK)) {
+                it->L_SYM_time = op_sim_time() + mh->vTime;
+                it->L_time = it->L_SYM_time + NEIGHB_HOLD_TIME;
+            }
+        }
+        it->L_time = max(it->L_time, it->L_ASYM_time);
+    }
+    this->updateOneHop(mh);
+    this->updateTwoHop(mh);
+}
+
+void table_manager::updateOneHop(message_packet *mh) {
+    vector<one_hop_neighbor>::iterator it = find(this->oneHopNeighborTable.begin(), this->oneHopNeighborTable.end(), mh->originatorAddress);
+    if (it != this->oneHopNeighborTable.end()) {
+        it->N_willingness = mh->helloMessage.willingness;
+        for (auto &i : this->localLinkTable)
+            if (i.L_neighbor_iface_addr == it->N_neighbor_addr) {
+                if (i.L_SYM_time >= op_sim_time())
+                    it->N_status = SYM;
+                else 
+                    it->N_status = NOT_SYM;
+                break;
+            }
+    }
+    else {
+        one_hop_neighbor item;
+        item.N_neighbor_addr = mh->originatorAddress;
+        item.N_willingness = mh->helloMessage.willingness;
+        for (auto &i : this->localLinkTable)
+            if (i.L_neighbor_iface_addr == item.N_neighbor_addr) {
+                if (i.L_SYM_time >= op_sim_time())
+                    item.N_status = SYM;
+                else
+                    item.N_status = NOT_SYM;
+                this->oneHopNeighborTable.push_back(item);
+                break;
+            }        
+    }
+}
+
+void table_manager::updateTwoHop(message_packet *mh) {
+    for (auto &i : this->oneHopNeighborTable) {
+        if (i.N_status == SYM && i.N_neighbor_addr == mh->originatorAddress) {
+            for (auto &j : mh->helloMessage.neighs) {
+                if (j.neighcode == MPR_NEIGH || j.neighcode == SYM_NEIGH) {
+                    for (auto &k : j.neighborAddress) {
+                        if (k != this->nodeId) {
+                            bool intable = false;
+                            for (auto &l : i.N_2hop)
+                                if (k == l.N_2hop_addr) {
+                                    l.N_time = op_sim_time() + mh->vTime;
+                                    intable = true;
+                                    break;
+                                }
+                            if (!intable) {
+                                two_hop_neighbor item;
+                                item.N_time = op_sim_time() + mh->vTime;
+                                item.N_2hop_addr = k;
+                                i.N_2hop.push_back(item);
+                            }
+                        }
+                    }
+                }
+                else if (j.neighcode == NOT_NEIGH) {
+                    for (auto &k : j.neighborAddress)
+                        for (vector<two_hop_neighbor>::iterator tit = i.N_2hop.begin(); tit != i.N_2hop.end(); ++tit)
+                            if (tit->N_2hop_addr == k)
+                                i.N_2hop.erase(tit);
+                }
+            }
+        }
+    }
+}
+
 UNINT table_manager::createMprTable() {
     set<unsigned int> N;
     map<unsigned int, set<unsigned int>> N2;
@@ -83,4 +175,37 @@ UNINT table_manager::createMprTable() {
         this->mprTable.push_back(mprItem);
     }
     return this->mprTable.size();
+}
+
+void table_manager::updateRepeatTable() {
+
+}
+
+void table_manager::updateTopologyTable(message_packet *mt) {
+    if (mt->messageType != TC)
+        return;
+    for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
+        if (it->T_last_addr == mt->originatorAddress && it->T_seq < mt->tcMessage.MSSN)
+            this->topologyTable.erase(it);
+    for (auto &i : mt->tcMessage.MPRSelectorAddresses) {
+        bool intable = false;
+        for (auto &j : this->topologyTable)
+            if (j.T_dest_addr == i && j.T_last_addr == mt->originatorAddress) {
+                intable = true;
+                j.T_time = op_sim_time() + mt->vTime;
+                break;
+            }
+        if (!intable) {
+            topology_item item;
+            item.T_dest_addr = i;
+            item.T_last_addr = mt->originatorAddress;
+            item.T_seq = mt->tcMessage.MSSN;
+            item.T_time = op_sim_time() + mt->vTime;
+            this->topologyTable.push_back(item);
+        }
+    }
+}
+
+void table_manager::getRouteTable() {
+    
 }
