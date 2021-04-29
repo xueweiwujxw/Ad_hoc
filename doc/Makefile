@@ -19,7 +19,7 @@ pngs=`ls image/*.mermaid|sed 's/.mermaid/.png/g'`
 	make $(svgs)
 	make $(pngs)
 	./docxproc.sh $<
-	pandoc --reference-doc=template3.docx -s -t docx --filter pandoc-crossref --citeproc --bibliography=bib/references.bib --csl=bib/chinese-gb7714-2005-numeric.csl -o $@ $@.md
+	pandoc --reference-doc=template.docx -s -t docx --filter pandoc-crossref --citeproc --bibliography=bib/references.bib --csl=bib/chinese-gb7714-2005-numeric.csl -o $@ $@.md
 	rm -rvf $@.md
 
 %.pdf:%.md eisvogel.latex $(scripts)
