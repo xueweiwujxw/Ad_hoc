@@ -180,10 +180,6 @@ UNINT table_manager::createMprTable() {
     return this->mprTable.size();
 }
 
-void table_manager::updateRepeatTable() {
-
-}
-
 void table_manager::updateTopologyTable(message_packet *mt) {
     if (mt->messageType != TC)
         return;
@@ -260,4 +256,17 @@ void table_manager::getRouteTable() {
             break;
     }
     
+}
+
+message_packet* table_manager::getHelloMsg() {
+    message_packet* mh;
+    mh->vTime = NEIGHB_HOLD_TIME;
+    
+    return mh;
+}
+
+message_packet* table_manager::getTCMsg() {
+    message_packet* mt;
+
+    return mt;
 }

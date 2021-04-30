@@ -27,10 +27,11 @@ namespace opnet
         ~table_manager() {}
         void updateLocalLink(message_packet *mh);
         UNINT createMprTable(); 
-        void updateRepeatTable();
         void updateTopologyTable(message_packet *mt);
         void getRouteTable();
         void freshTables();
+        message_packet* getHelloMsg();
+        message_packet* getTCMsg();
     protected:
         void updateOneHop(message_packet *mh);
         void updateTwoHop(message_packet *mh);
