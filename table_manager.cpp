@@ -107,23 +107,26 @@ UNINT table_manager::createMprTable() {
     set<unsigned int> mpr;
 
     for (auto &i: this->oneHopNeighborTable) {
-        N.insert(i.N_neighbor_addr);
+        if (i.N_status == SYM)
+            N.insert(i.N_neighbor_addr);
     }
 
     for (auto &i : this->oneHopNeighborTable) {
-        set<unsigned int> tmp;
-        for (auto &j : i.N_2hop)
-            if (i.N_willingness != WILL_NEVER && N.find(j.N_2hop_addr) != N.end() && j.N_2hop_addr != this->nodeId) {
-                tmp.insert(j.N_2hop_addr);
-                if (N2.find(j.N_2hop_addr) == N2.end()) {
-                    set<UNINT> oneNeighbor;
-                    oneNeighbor.insert(i.N_neighbor_addr);
-                    N2.insert(make_pair(j.N_2hop_addr, oneNeighbor));
+        if (i.N_status == SYM) {
+            set<unsigned int> tmp;
+            for (auto &j : i.N_2hop)
+                if (i.N_willingness != WILL_NEVER && N.find(j.N_2hop_addr) != N.end() && j.N_2hop_addr != this->nodeId) {
+                    tmp.insert(j.N_2hop_addr);
+                    if (N2.find(j.N_2hop_addr) == N2.end()) {
+                        set<UNINT> oneNeighbor;
+                        oneNeighbor.insert(i.N_neighbor_addr);
+                        N2.insert(make_pair(j.N_2hop_addr, oneNeighbor));
+                    }
+                    else
+                        N2[j.N_2hop_addr].insert(i.N_neighbor_addr);
                 }
-                else
-                    N2[j.N_2hop_addr].insert(i.N_neighbor_addr);
-            }
-        N_neghbor.insert(make_pair(i.N_neighbor_addr, tmp));
+            N_neghbor.insert(make_pair(i.N_neighbor_addr, tmp));
+        }
     }
     
     // 计算D(y)
@@ -207,5 +210,54 @@ void table_manager::updateTopologyTable(message_packet *mt) {
 }
 
 void table_manager::getRouteTable() {
+    this->routeTable.clear();
+    // 加入邻居
+    for (auto &i : this->oneHopNeighborTable) {
+        if (i.N_status == SYM) {
+            route_item item;
+            item.R_dest_addr = i.N_neighbor_addr;
+            item.R_next_addr = i.N_neighbor_addr;
+            item.R_dist = 1;
+            this->routeTable.push_back(item);
+            if (!i.N_2hop.empty()) {
+                for (auto &j : i.N_2hop) {
+                    if (j.N_time >= op_sim_time()) {
+                        item.R_dest_addr = j.N_2hop_addr;
+                        item.R_next_addr = i.N_neighbor_addr;
+                        item.R_dist = 2;
+                        this->routeTable.push_back(item);
+                    }
+                }
+            }
+        }
+    }
+    // 迭代加入拓扑项
+    int h = 2;
+    while (1) {
+        bool hasNewItem = false;
+        for (auto &i : this->topologyTable) {
+            bool intable = false;
+            for (auto &j: this->routeTable) {
+                if (i.T_dest_addr == j.R_dest_addr) {
+                    intable = true;
+                    break;
+                }
+            }
+            if (!intable) {
+                for (auto &j: this->routeTable) {
+                    if (j.R_dest_addr == i.T_last_addr && j.R_dist == h) {
+                        route_item item;
+                        item.R_dest_addr = i.T_dest_addr;
+                        item.R_next_addr = j.R_dest_addr;
+                        item.R_dist = h + 1;
+                        hasNewItem = true;
+                    }
+                }
+            }
+            else continue;
+        }
+        if (!hasNewItem)
+            break;
+    }
     
 }
