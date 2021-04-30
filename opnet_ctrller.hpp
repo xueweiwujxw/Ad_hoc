@@ -63,8 +63,6 @@ namespace opnet {
         bool rx_blocked;
         int packetCount;
         int packetSequence;
-        int isrunning;
-        future<int> m_future;
         vector<results> res;
         int resId;
 
@@ -77,7 +75,6 @@ namespace opnet {
         void on_self();
         void send(void *data, unsigned int len);
         void schedule_self(double);
-        int run();
         ~opnet_ctrller();
         void printRess();
     };  
