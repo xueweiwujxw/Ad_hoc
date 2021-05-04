@@ -1,5 +1,5 @@
 #pragma once
-#include <Adnode_ctrl.hpp>
+#include <Adnode_ctrl_simple.hpp>
 #include <future>
 #include <string>
 #include <vector>
@@ -7,18 +7,6 @@
 using namespace std;
 
 namespace opnet {
-    // class opnet_ctrller
-    // {
-    // private:
-    //     int packetCount;
-    // public:
-    //     opnet_ctrller();
-    //     ~opnet_ctrller();
-    //     void on_sim_start();
-    //     void on_strm(int);
-    //     void on_stat(int);
-    //     void on_sim_stop();
-    // };  
     class results
     {
     private:
