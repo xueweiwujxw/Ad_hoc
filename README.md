@@ -10,6 +10,7 @@
 * 重复记录表更新 :x:
 * TC数据包生成 :white_check_mark:
 * HELLO数据包生成 :white_check_mark:
+* 本地记录表刷新 :white_check_mark:
 
 ### 顶层控制
 * 发包 :x:

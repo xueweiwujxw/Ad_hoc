@@ -337,3 +337,22 @@ message_packet* table_manager::getTCMsg() {
     mt->messageSize = mt->getSize();
     return mt;
 }
+
+void table_manager::freshTables() {
+    for (vector<local_link>::iterator it = this->localLinkTable.begin(); it != this->localLinkTable.end(); ++it)
+        if (it->L_time < op_sim_time())
+            this->localLinkTable.erase(it);
+    for (auto &i : this->oneHopNeighborTable) 
+        for (vector<two_hop_neighbor>::iterator it = i.N_2hop.begin(); it != i.N_2hop.end(); ++it)
+            if (it->N_time < op_sim_time()) 
+                i.N_2hop.erase(it);
+    for (vector<MPR>::iterator it = this->mprTable.begin(); it != this->mprTable.end(); ++it)
+        if (it->MS_time < op_sim_time())
+            this->mprTable.erase(it);
+    for (vector<duplicat_set>::iterator it = this->repeatTable.begin(); it != this->repeatTable.end(); ++it)
+        if (it->D_time < op_sim_time())
+            this->repeatTable.erase(it);
+    for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
+        if (it->T_time < op_sim_time()) 
+            this->topologyTable.erase(it);
+}
