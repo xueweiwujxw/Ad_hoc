@@ -21,7 +21,7 @@ void table_manager::updateLocalLink(message_packet *mh) {
     }
     else {
         it->L_ASYM_time = op_sim_time() + mh->vTime;
-        for (auto &i : mh->helloMessage.links) {
+        for (auto &i : mh->helloMessage->links) {
             vector<UNINT>::iterator lit = find(i.neighborAddress.begin(), i.neighborAddress.end(), this->nodeId);
             if (lit != i.neighborAddress.end() && i.linkcode == LOST_LINK)
                 it->L_SYM_time = op_sim_time() - 1;
@@ -39,7 +39,7 @@ void table_manager::updateLocalLink(message_packet *mh) {
 void table_manager::updateOneHop(message_packet *mh) {
     vector<one_hop_neighbor>::iterator it = find(this->oneHopNeighborTable.begin(), this->oneHopNeighborTable.end(), mh->originatorAddress);
     if (it != this->oneHopNeighborTable.end()) {
-        it->N_willingness = mh->helloMessage.willingness;
+        it->N_willingness = mh->helloMessage->willingness;
         for (auto &i : this->localLinkTable)
             if (i.L_neighbor_iface_addr == it->N_neighbor_addr) {
                 if (i.L_SYM_time >= op_sim_time())
@@ -52,7 +52,7 @@ void table_manager::updateOneHop(message_packet *mh) {
     else {
         one_hop_neighbor item;
         item.N_neighbor_addr = mh->originatorAddress;
-        item.N_willingness = mh->helloMessage.willingness;
+        item.N_willingness = mh->helloMessage->willingness;
         for (auto &i : this->localLinkTable)
             if (i.L_neighbor_iface_addr == item.N_neighbor_addr) {
                 if (i.L_SYM_time >= op_sim_time())
@@ -68,7 +68,7 @@ void table_manager::updateOneHop(message_packet *mh) {
 void table_manager::updateTwoHop(message_packet *mh) {
     for (auto &i : this->oneHopNeighborTable) {
         if (i.N_status == SYM && i.N_neighbor_addr == mh->originatorAddress) {
-            for (auto &j : mh->helloMessage.neighs) {
+            for (auto &j : mh->helloMessage->neighs) {
                 if (j.neighcode == MPR_NEIGH || j.neighcode == SYM_NEIGH) {
                     for (auto &k : j.neighborAddress) {
                         if (k != this->nodeId) {
@@ -184,9 +184,9 @@ void table_manager::updateTopologyTable(message_packet *mt) {
     if (mt->messageType != TC)
         return;
     for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
-        if (it->T_last_addr == mt->originatorAddress && it->T_seq < mt->tcMessage.MSSN)
+        if (it->T_last_addr == mt->originatorAddress && it->T_seq < mt->tcMessage->MSSN)
             this->topologyTable.erase(it);
-    for (auto &i : mt->tcMessage.MPRSelectorAddresses) {
+    for (auto &i : mt->tcMessage->MPRSelectorAddresses) {
         bool intable = false;
         for (auto &j : this->topologyTable)
             if (j.T_dest_addr == i && j.T_last_addr == mt->originatorAddress) {
@@ -198,7 +198,7 @@ void table_manager::updateTopologyTable(message_packet *mt) {
             topology_item item;
             item.T_dest_addr = i;
             item.T_last_addr = mt->originatorAddress;
-            item.T_seq = mt->tcMessage.MSSN;
+            item.T_seq = mt->tcMessage->MSSN;
             item.T_time = op_sim_time() + mt->vTime;
             this->topologyTable.push_back(item);
         }
@@ -313,7 +313,7 @@ message_packet* table_manager::getHelloMsg() {
     if (!nsmpr.neighborAddress.empty())
         mph->neighs.push_back(nsmpr);
     mph->willingness = WILL_DEFAULT;
-    mh->helloMessage = *mph;
+    mh->helloMessage = mph;
     mh->messageSize = mh->getSize();
     return mh;
 }
@@ -333,7 +333,7 @@ message_packet* table_manager::getTCMsg() {
             mpt->MPRSelectorAddresses.push_back(i.MS_addr);
         }
     }
-    mt->tcMessage = *mpt;
+    mt->tcMessage = mpt;
     mt->messageSize = mt->getSize();
     return mt;
 }
@@ -349,9 +349,6 @@ void table_manager::freshTables() {
     for (vector<MPR>::iterator it = this->mprTable.begin(); it != this->mprTable.end(); ++it)
         if (it->MS_time < op_sim_time())
             this->mprTable.erase(it);
-    for (vector<duplicat_set>::iterator it = this->repeatTable.begin(); it != this->repeatTable.end(); ++it)
-        if (it->D_time < op_sim_time())
-            this->repeatTable.erase(it);
     for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
         if (it->T_time < op_sim_time()) 
             this->topologyTable.erase(it);

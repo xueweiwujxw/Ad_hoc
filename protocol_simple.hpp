@@ -130,16 +130,25 @@ namespace opnet
         UNINT TTL: 8;
         UNINT hopCount: 8;
         UNINT messageSequenceNumber: 16;
-        message_hello helloMessage;
-        message_tc tcMessage;
-        message_normal normalMessage;
+        message_hello* helloMessage;
+        message_tc* tcMessage;
+        message_normal* normalMessage;
         int getSize() {
-            if (this->messageType == HELLO)
-                this->messageSize = this->helloMessage.getSize() + 12;
-            else if (this->messageType == TC)
-                this->messageSize = this->tcMessage.getSize() + 12;
-            else if (this->messageType == NORMAL)
-                this->messageSize = this->normalMessage.getSize() + 12;
+            if (this->messageType == HELLO) {
+                this->messageSize = this->helloMessage->getSize() + 20;
+                tcMessage = nullptr;
+                normalMessage = nullptr;
+            }
+            else if (this->messageType == TC) {
+                this->messageSize = this->tcMessage->getSize() + 20;
+                helloMessage = nullptr;
+                normalMessage = nullptr;
+            }
+            else if (this->messageType == NORMAL) {
+                this->messageSize = this->normalMessage->getSize() + 20;
+                helloMessage = nullptr;
+                tcMessage = nullptr;
+            }
         }
     };
     
