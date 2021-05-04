@@ -260,13 +260,80 @@ void table_manager::getRouteTable() {
 
 message_packet* table_manager::getHelloMsg() {
     message_packet* mh;
+    link_status lsas(ASYM_LINK);
+    link_status lss(SYM_LINK);
+    link_status lslo(LOST_LINK);
+    neigh_status nsnot(NOT_NEIGH);
+    neigh_status nssym(SYM_NEIGH);
+    neigh_status nsmpr(MPR_NEIGH);
+    for (auto &i : this->localLinkTable) {
+        if (i.L_SYM_time >= op_sim_time()) 
+            lss.neighborAddress.push_back(i.L_neighbor_iface_addr);
+        else if (i.L_ASYM_time >= op_sim_time())
+            lsas.neighborAddress.push_back(i.L_neighbor_iface_addr);
+        else 
+            lslo.neighborAddress.push_back(i.L_neighbor_iface_addr);
+        bool inmpr = false, inneigh = false;
+        for (auto &j : this->mprTable) {
+            if (j.MS_addr == i.L_neighbor_iface_addr) {
+                inmpr = true;
+                break;
+            }
+        }
+        for (auto &j : this->oneHopNeighborTable) {
+            if (j.N_neighbor_addr == i.L_neighbor_iface_addr) {
+                inneigh = true;
+                break;
+            }
+        }
+        if (inmpr)
+            nsmpr.neighborAddress.push_back(i.L_neighbor_iface_addr);
+        else if (inneigh)
+            nssym.neighborAddress.push_back(i.L_neighbor_iface_addr);
+        else
+            nsnot.neighborAddress.push_back(i.L_neighbor_iface_addr);
+    }
+    mh->messageType = HELLO;
     mh->vTime = NEIGHB_HOLD_TIME;
-    
+    mh->originatorAddress = this->nodeId;
+    mh->TTL = 1;
+    mh->hopCount = 0;
+    mh->messageSequenceNumber = this->messageSequenceNumber++;
+    message_hello *mph;
+    if (!lslo.neighborAddress.empty()) 
+        mph->links.push_back(lslo);
+    if (!lsas.neighborAddress.empty())
+        mph->links.push_back(lsas);
+    if (!lss.neighborAddress.empty())
+        mph->links.push_back(lss);
+    if (!nsnot.neighborAddress.empty())
+        mph->neighs.push_back(nsnot);
+    if (!nssym.neighborAddress.empty())
+        mph->neighs.push_back(nssym);
+    if (!nsmpr.neighborAddress.empty())
+        mph->neighs.push_back(nsmpr);
+    mph->willingness = WILL_DEFAULT;
+    mh->helloMessage = *mph;
+    mh->messageSize = mh->getSize();
     return mh;
 }
 
 message_packet* table_manager::getTCMsg() {
     message_packet* mt;
-
+    mt->messageType = TC;
+    mt->vTime = TOP_HOLD_TIME;
+    mt->originatorAddress = this->nodeId;
+    mt->TTL = 255;
+    mt->hopCount = 0;
+    mt->messageSequenceNumber = this->messageSequenceNumber++;
+    message_tc *mpt;
+    mpt->MSSN = this->MSSN++;
+    for (auto &i : this->mprTable) {
+        if (i.MS_time >= op_sim_time()) {
+            mpt->MPRSelectorAddresses.push_back(i.MS_addr);
+        }
+    }
+    mt->tcMessage = *mpt;
+    mt->messageSize = mt->getSize();
     return mt;
 }

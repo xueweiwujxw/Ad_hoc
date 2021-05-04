@@ -17,7 +17,6 @@ namespace opnet
     {
         ASYM_LINK,
         SYM_LINK,
-        MPR_LINK,
         LOST_LINK
     };
 
@@ -64,8 +63,9 @@ namespace opnet
         UNINT linkcode;
         vector<UNINT> neighborAddress;
         link_status(LinkCode lc) {
-            this->linkcode = 0;
+            this->linkcode = lc;
         }
+        link_status() {}
         UNINT getSize() {
             return 4 + 4 * this->neighborAddress.size();
         }
@@ -78,6 +78,7 @@ namespace opnet
         neigh_status(NeighCode nc) {
             this->neighcode = nc;
         }
+        neigh_status() {}
         UNINT getSize() {
             return 4 + 4 * this->neighborAddress.size();
         }
@@ -134,11 +135,11 @@ namespace opnet
         message_normal normalMessage;
         int getSize() {
             if (this->messageType == HELLO)
-                this->messageSize = this->helloMessage.getSize();
+                this->messageSize = this->helloMessage.getSize() + 12;
             else if (this->messageType == TC)
-                this->messageSize = this->tcMessage.getSize();
+                this->messageSize = this->tcMessage.getSize() + 12;
             else if (this->messageType == NORMAL)
-                this->messageSize = this->normalMessage.getSize();
+                this->messageSize = this->normalMessage.getSize() + 12;
         }
     };
     

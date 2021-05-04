@@ -8,8 +8,8 @@
 * 路由表更新 :white_check_mark:
 * MPR集计算 :white_check_mark:
 * 重复记录表更新 :x:
-* TC数据包生成 :x:
-* HELLO数据包生成 :x:
+* TC数据包生成 :white_check_mark:
+* HELLO数据包生成 :white_check_mark:
 
 ### 顶层控制
 * 发包 :x:
