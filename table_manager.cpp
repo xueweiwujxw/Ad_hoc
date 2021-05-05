@@ -10,7 +10,10 @@ using namespace opnet;
 void table_manager::updateLocalLink(message_packet *mh) {
     if (mh->messageType != HELLO)
         return;
-    vector<local_link>::iterator it = find(this->localLinkTable.begin(), this->localLinkTable.end(), mh->originatorAddress);
+    vector<local_link>::iterator it;// = find(this->localLinkTable.begin(), this->localLinkTable.end(), mh->originatorAddress);
+    for (it = this->localLinkTable.begin(); it != this->localLinkTable.end(); ++it)
+        if (it->L_neighbor_iface_addr == mh->originatorAddress)
+            break;
     if (it != this->localLinkTable.end()) {
         local_link item;
         item.L_neighbor_iface_addr = mh->originatorAddress;
@@ -37,7 +40,10 @@ void table_manager::updateLocalLink(message_packet *mh) {
 }
 
 void table_manager::updateOneHop(message_packet *mh) {
-    vector<one_hop_neighbor>::iterator it = find(this->oneHopNeighborTable.begin(), this->oneHopNeighborTable.end(), mh->originatorAddress);
+    vector<one_hop_neighbor>::iterator it;// = find(this->oneHopNeighborTable.begin(), this->oneHopNeighborTable.end(), mh->originatorAddress);
+    for (it == this->oneHopNeighborTable.begin(); it != this->oneHopNeighborTable.end(); ++it)
+        if (it->N_neighbor_addr == mh->originatorAddress)
+            break;
     if (it != this->oneHopNeighborTable.end()) {
         it->N_willingness = mh->helloMessage->willingness;
         for (auto &i : this->localLinkTable)
@@ -259,7 +265,7 @@ void table_manager::getRouteTable() {
 }
 
 message_packet* table_manager::getHelloMsg() {
-    message_packet* mh;
+    message_packet* mh = new message_packet;
     link_status lsas(ASYM_LINK);
     link_status lss(SYM_LINK);
     link_status lslo(LOST_LINK);
@@ -299,7 +305,7 @@ message_packet* table_manager::getHelloMsg() {
     mh->TTL = 1;
     mh->hopCount = 0;
     mh->messageSequenceNumber = this->messageSequenceNumber++;
-    message_hello *mph;
+    message_hello *mph = new message_hello;
     if (!lslo.neighborAddress.empty()) 
         mph->links.push_back(lslo);
     if (!lsas.neighborAddress.empty())
@@ -319,14 +325,16 @@ message_packet* table_manager::getHelloMsg() {
 }
 
 message_packet* table_manager::getTCMsg() {
-    message_packet* mt;
+    if (this->mprTable.empty())
+        return nullptr;
+    message_packet* mt = new message_packet;
     mt->messageType = TC;
     mt->vTime = TOP_HOLD_TIME;
     mt->originatorAddress = this->nodeId;
     mt->TTL = 255;
     mt->hopCount = 0;
     mt->messageSequenceNumber = this->messageSequenceNumber++;
-    message_tc *mpt;
+    message_tc *mpt = new message_tc;
     mpt->MSSN = this->MSSN++;
     for (auto &i : this->mprTable) {
         if (i.MS_time >= op_sim_time()) {

@@ -15,7 +15,6 @@ namespace opnet
         vector<one_hop_neighbor> oneHopNeighborTable;
         vector<two_hop_neighbor> twoHopNeighborTable;
         vector<MPR> mprTable;
-        vector<duplicat_set> repeatTable;
         vector<topology_item> topologyTable;
         vector<route_item> routeTable;
         UNINT MSSN;
@@ -30,6 +29,7 @@ namespace opnet
         void updateTopologyTable(message_packet *mt);
         void getRouteTable();
         void freshTables();
+        void updateRepeatTable();
         message_packet* getHelloMsg();
         message_packet* getTCMsg();
     protected:

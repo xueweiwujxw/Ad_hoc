@@ -7,16 +7,15 @@
 * 拓扑表更新 :white_check_mark:
 * 路由表更新 :white_check_mark:
 * MPR集计算 :white_check_mark:
-* 重复记录表更新 :x:
 * TC数据包生成 :white_check_mark:
 * HELLO数据包生成 :white_check_mark:
 * 本地记录表刷新 :white_check_mark:
 
 ### 顶层控制
-* 发包 :x:
-* 收包 :x:
-* 转发 :x:
-* 重复判断 :x:
+* 发包 :white_check_mark:
+* 收包 :white_check_mark:
+* 转发 :o:
+* 重复判断 :o:
 
 ### 数据收集
 * 仿真结束统计数据 :o:

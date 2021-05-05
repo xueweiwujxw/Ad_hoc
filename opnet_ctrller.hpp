@@ -3,6 +3,7 @@
 #include <future>
 #include <string>
 #include <vector>
+#include <protocol_simple.hpp>
 
 using namespace std;
 
@@ -53,6 +54,7 @@ namespace opnet {
         int packetSequence;
         vector<results> res;
         int resId;
+        Adnode_ctrl_simple* acs;
 
     public:
         opnet_ctrller();
@@ -62,7 +64,7 @@ namespace opnet {
         void on_sim_stop();
         void on_self();
         void send(void *data, unsigned int len);
-        void schedule_self(double);
+        void schedule_self(double, UNINT);
         ~opnet_ctrller();
         void printRess();
     };  

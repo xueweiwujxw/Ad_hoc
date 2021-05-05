@@ -13,6 +13,12 @@ namespace opnet
 
 #define UNINT unsigned int
 
+    enum ScheduleCode
+    {
+        OPC_HELLO_SEND,
+        OPC_TC_SEND
+    };
+
     enum LinkCode
     {
         ASYM_LINK,
@@ -149,6 +155,7 @@ namespace opnet
                 helloMessage = nullptr;
                 tcMessage = nullptr;
             }
+            return this->messageSize;
         }
     };
     
