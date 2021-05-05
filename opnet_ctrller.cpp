@@ -7,7 +7,7 @@ using namespace opnet;
 #define pksize 1024
 
 opnet_ctrller::opnet_ctrller() {    
-    this->packetSequence = 0;
+    // this->packetSequence = 0;
     this->packetCount = 0;
     this->resId = 0;
 }
@@ -17,11 +17,15 @@ opnet_ctrller::~opnet_ctrller() {
 
 
 void opnet_ctrller::schedule_self(double interval, UNINT code) {
-    op_intrpt_schedule_self(op_sim_time() + interval, 0);
+    op_intrpt_schedule_self(op_sim_time() + interval, code);
 }
 
-void opnet_ctrller::send(void *data, unsigned int len) {
-    Packet *p = op_pk_create(len * 8);
+void opnet_ctrller::send(void *data, UNINT len, UNINT type) {
+    if (type == OPC_HELLO_SEND)
+        this->schedule_self(HELLO_INTERVAL, OPC_HELLO_SEND);
+    if (type == OPC_TC_SEND)
+        this->schedule_self(TC_INTERVAL, OPC_TC_SEND);
+    Packet *p = op_pk_create(0);
     void *custom = op_prg_mem_alloc(len);
     op_prg_mem_copy(data, custom, len);
     op_pk_fd_set_ptr(p, 0, custom, 8 * len, op_prg_mem_copy_create, op_prg_mem_free, len);
@@ -35,32 +39,35 @@ void opnet_ctrller::send(void *data, unsigned int len) {
 }
 
 void opnet_ctrller::on_sim_start() {
-    cout << "node " << op_node_id() << " start at time : " << op_sim_time() << endl;
-    // this->schedule_self(op_node_id() / 20.0);
+    // cout << "node " << op_node_id() << " start at time : " << op_sim_time() << endl;
     int nodeId = op_node_id();
     this->acs = new Adnode_ctrl_simple(op_node_id());
     this->schedule_self(nodeId / 20.0, OPC_HELLO_SEND);
-    this->schedule_self(nodeId / 20.0, OPC_TC_SEND);
+    this->schedule_self(nodeId / 20.0+0.005, OPC_TC_SEND);
 }
 
 void opnet_ctrller::on_self() {
-    if (op_intrpt_code() == OPC_TC_SEND)
-        this->schedule_self(TC_INTERVAL, OPC_TC_SEND);
-    if (op_intrpt_code() == OPC_HELLO_SEND)
-        this->schedule_self(HELLO_INTERVAL, OPC_HELLO_SEND);
+    // cout << "op_intrpt_code(): " << op_intrpt_code() << endl;
     // nodePackets *np = new nodePackets;
     // np->number = this->packetSequence;
     // np->origin = op_node_id();
     // void *data = reinterpret_cast<void *>(np);
     // unsigned int len = 8;
     // this->packetSequence++;
-    OLSR_packet* data;
+    OLSR_packet* opack;
     UNINT len;
     if (op_intrpt_code() == OPC_TC_SEND) {
-        data = this->acs->getOLSRPackets(0, 1);
-        len = data->packetLenth;
+        opack = this->acs->getOLSRPackets(0, 1);
+        len = opack->packetLenth;
+        void* data = reinterpret_cast<void*>(opack);
+        this->send(data, len, OPC_TC_SEND);
     }
-    this->send(data, len);
+    if (op_intrpt_code() == OPC_HELLO_SEND) {
+        opack = this->acs->getOLSRPackets(1, 0);
+        len = opack->packetLenth;
+        void* data = reinterpret_cast<void*>(opack);
+        this->send(data, len, OPC_HELLO_SEND);
+    }
 }
 
 void opnet_ctrller::on_stream(int id) {
@@ -68,6 +75,7 @@ void opnet_ctrller::on_stream(int id) {
     int len = op_pk_total_size_get(p) / 8;
     void *buffer;
     op_pk_fd_get_ptr(p, 0, &buffer);
+    op_pk_print(p);
     // nodePackets* np;
     // np = reinterpret_cast<nodePackets*>(buffer);
     // if (np->origin != op_node_id()) {
@@ -78,15 +86,21 @@ void opnet_ctrller::on_stream(int id) {
     // }
     OLSR_packet *np;
     np = reinterpret_cast<OLSR_packet*>(buffer);
-    results item(this->resId, op_sim_time(), "RECV", op_node_id(), np->packetSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR));
-    this->resId++;
-    this->res.push_back(item);
-    this->packetCount++;
+    // cout << "recv packets len: " << len << endl;
+    if (np->packetLenth != 4) {
+        for (auto &i : np->messagePackets) {
+            if (i.originatorAddress != op_node_id()) {
+                results item(this->resId, op_sim_time(), "RECV", i.originatorAddress, i.messageSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR));
+                this->resId++;
+                this->res.push_back(item);
+                this->packetCount++;
+            }
+        }
+    }
     op_pk_destroy(p);
 }
 
 void opnet_ctrller::on_stat(int id) {
-    cout << "opnet_stat" << endl;
 
 }
 
