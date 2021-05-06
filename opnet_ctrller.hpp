@@ -63,7 +63,7 @@ namespace opnet {
         void on_stat(int);
         void on_sim_stop();
         void on_self();
-        void send(void *data, UNINT len, UNINT type);
+        void send(OLSR_packet data, UNINT len, UNINT type);
         void schedule_self(double, UNINT);
         ~opnet_ctrller();
         void printRess();
