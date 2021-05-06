@@ -26,17 +26,18 @@ namespace opnet
     public:
         table_manager(int nodeId) : MSSN(0), messageSequenceNumber(0), packetSequenceNumber(0), nodeId(nodeId) {}
         ~table_manager() {}
-        void updateLocalLink(message_packet *mh);
+        void updateLocalLink(message_packet mh);
         UNINT createMprSet(); 
-        void updateTopologyTable(message_packet *mt);
+        void updateTopologyTable(message_packet mt);
         void getRouteTable();
         void freshTables();
         message_packet getHelloMsg();
         message_packet getTCMsg();
         bool mprEmpty();
+        void print();
     protected:
-        void updateMprTable(message_packet *mh);
-        void updateOneHop(message_packet *mh);
-        void updateTwoHop(message_packet *mh);
+        void updateMprTable(message_packet mh);
+        void updateOneHop(message_packet mh);
+        void updateTwoHop(message_packet mh);
     };
 } // namespace opnet

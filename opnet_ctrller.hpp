@@ -20,8 +20,9 @@ namespace opnet {
         double BER;
         double snr;
         int id;
+        UNINT type;
     public:
-        results(int id, double time, char* behavior, int origin, int number, double dist, double delay, double BER, double snr) {
+        results(int id, double time, char* behavior, int origin, int number, double dist, double delay, double BER, double snr, UNINT type) {
             this->id = id;
             this->time = time;
             this->behavior = behavior;
@@ -31,13 +32,21 @@ namespace opnet {
             this->delay = delay;
             this->BER = BER;
             this->snr = snr;
+            this->type = type;
         }
         ~results() {}
         void printRes() {
+            char str[7];
+            if (this->type == HELLO) 
+                strcpy(str, "HELLO");
+            else if (this->type == TC)
+                strcpy(str, "TC");
+            else if (this->type == NORMAL)
+                strcpy(str, "NORMAL");
             if (strcmp(behavior, "SEND") == 0)
-                printf("%-4d |%-9.6f |%-9s |%-9d |%-9d |%-9s |%-9s |%-9s |%-9s\n", id, time, behavior, origin, number, "NAN", "NAN", "NAN", "NAN");
+                printf("%-4d |%-9.6f |%-9s |%-9s |%-9d |%-9d |%-9s |%-9s |%-9s |%-9s\n", id, time, behavior, str, origin, number, "NAN", "NAN", "NAN", "NAN");
             else if (strcmp(behavior, "RECV") == 0)
-                printf("%-4d |%-9.6f |%-9s |%-9d |%-9d |%-9.3f |%-9.6f |%-9.6f |%-9.6f\n",id, time, behavior, origin, number, dist, delay, BER, snr);
+                printf("%-4d |%-9.6f |%-9s |%-9s |%-9d |%-9d |%-9.3f |%-9.6f |%-9.6f |%-9.6f\n", id, time, behavior, str, origin, number, dist, delay, BER, snr);
         }
 
     };

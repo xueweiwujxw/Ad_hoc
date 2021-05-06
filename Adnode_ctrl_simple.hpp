@@ -25,10 +25,10 @@ namespace opnet
         ~Adnode_ctrl_simple() {
             delete tm;
         }
-        void updateRepeatTable(message_packet* mp);
+        void updateRepeatTable(message_packet mp);
         pair<OLSR_packet, UNINT> getOLSRPackets(bool hello, bool tc);
-        void recvPackets(OLSR_packet* opack);
-        void forwardPackets(message_packet* mp);
+        void recvPackets(OLSR_packet opack);
+        void forwardPackets(message_packet mp);
         void scheduleSelf(double interval, int code);
     };
 } // namespace opnet
