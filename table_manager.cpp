@@ -8,9 +8,10 @@ using namespace std;
 using namespace opnet;
 
 void table_manager::updateLocalLink(message_packet mh) {
+    // cout << this->nodeId << " start " << endl;
     if (mh.messageType != HELLO)
         return;
-    vector<local_link>::iterator it;// = find(this->localLinkTable.begin(), this->localLinkTable.end(), mh->originatorAddress);
+    vector<local_link>::iterator it;
     for (it = this->localLinkTable.begin(); it != this->localLinkTable.end(); ++it)
         if (it->L_neighbor_iface_addr == mh.originatorAddress)
             break;
@@ -36,16 +37,19 @@ void table_manager::updateLocalLink(message_packet mh) {
         }
         it->L_time = max(it->L_time, it->L_ASYM_time);
     }
+    // cout << this->nodeId << " end " << endl;
+    // cout << "update local link procedure end " << endl;
     this->updateOneHop(mh);
     this->updateTwoHop(mh);
     this->updateMprTable(mh);
 }
 
 void table_manager::updateOneHop(message_packet mh) {
-    vector<one_hop_neighbor>::iterator it;// = find(this->oneHopNeighborTable.begin(), this->oneHopNeighborTable.end(), mh->originatorAddress);
-    for (it == this->oneHopNeighborTable.begin(); it != this->oneHopNeighborTable.end(); ++it)
+    vector<one_hop_neighbor>::iterator it;
+    for (it = this->oneHopNeighborTable.begin(); it != this->oneHopNeighborTable.end(); ++it) {
         if (it->N_neighbor_addr == mh.originatorAddress)
             break;
+    }
     if (it != this->oneHopNeighborTable.end()) {
         it->N_willingness = mh.helloMessage.willingness;
         for (auto &i : this->localLinkTable)
@@ -71,6 +75,7 @@ void table_manager::updateOneHop(message_packet mh) {
                 break;
             }        
     }
+    // cout << "update one hop" << endl;
 }
 
 void table_manager::updateTwoHop(message_packet mh) {
@@ -99,12 +104,15 @@ void table_manager::updateTwoHop(message_packet mh) {
                 else if (j.neighcode == NOT_NEIGH) {
                     for (auto &k : j.neighborAddress)
                         for (vector<two_hop_neighbor>::iterator tit = i.N_2hop.begin(); tit != i.N_2hop.end(); ++tit)
-                            if (tit->N_2hop_addr == k)
+                            if (tit->N_2hop_addr == k) {
                                 i.N_2hop.erase(tit);
+                                tit--;
+                            }
                 }
             }
         }
     }
+    // cout << "update two hop" << endl;
 }
 
 void table_manager::updateMprTable(message_packet mh) {
@@ -124,6 +132,7 @@ void table_manager::updateMprTable(message_packet mh) {
             }
         }
     }
+    // cout << "update mpt table" << endl;
 }
 
 UNINT table_manager::createMprSet() {
@@ -206,8 +215,10 @@ void table_manager::updateTopologyTable(message_packet mt) {
     if (mt.messageType != TC)
         return;
     for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
-        if (it->T_last_addr == mt.originatorAddress && it->T_seq < mt.tcMessage.MSSN)
+        if (it->T_last_addr == mt.originatorAddress && it->T_seq < mt.tcMessage.MSSN) {
             this->topologyTable.erase(it);
+            it--;
+        }
     for (auto &i : mt.tcMessage.MPRSelectorAddresses) {
         bool intable = false;
         for (auto &j : this->topologyTable)
@@ -355,19 +366,29 @@ message_packet table_manager::getTCMsg() {
 }
 
 void table_manager::freshTables() {
+    // cout << this->nodeId << " fresh start " << endl;
     for (vector<local_link>::iterator it = this->localLinkTable.begin(); it != this->localLinkTable.end(); ++it)
-        if (it->L_time < op_sim_time())
+        if (it->L_time < op_sim_time()) {
             this->localLinkTable.erase(it);
+            it--;
+        }
     for (auto &i : this->oneHopNeighborTable) 
         for (vector<two_hop_neighbor>::iterator it = i.N_2hop.begin(); it != i.N_2hop.end(); ++it)
-            if (it->N_time < op_sim_time()) 
+            if (it->N_time < op_sim_time()) {
                 i.N_2hop.erase(it);
+                it--;
+            }
     for (vector<MPR>::iterator it = this->mprTable.begin(); it != this->mprTable.end(); ++it)
-        if (it->MS_time < op_sim_time())
+        if (it->MS_time < op_sim_time()) {
             this->mprTable.erase(it);
+            it--;
+        }
     for (vector<topology_item>::iterator it = this->topologyTable.begin(); it != this->topologyTable.end(); ++it)
-        if (it->T_time < op_sim_time()) 
+        if (it->T_time < op_sim_time()) {
             this->topologyTable.erase(it);
+            it--;
+        }
+    // cout << this->nodeId << " fresh end " << endl;
 }
 
 bool table_manager::mprEmpty() {
@@ -375,6 +396,16 @@ bool table_manager::mprEmpty() {
 }
 
 void table_manager::print() {
-    for (auto &i : this->localLinkTable)
-        printf("%-3d %-3d %-3d %-3d %-3d\n", i.L_neighbor_iface_addr, i.L_quality, i.L_SYM_time, i.L_ASYM_time, i.L_time);
+    cout << this->nodeId << endl;
+    // for (auto &i : this->localLinkTable)
+    //     printf("%-3d %-3d %-3d %-3d %-3d\n", i.L_neighbor_iface_addr, i.L_quality, i.L_SYM_time, i.L_ASYM_time, i.L_time);
+    // for (auto &i : this->oneHopNeighborTable) {
+    //     printf("%-3d %-3d %-3d\n", i.N_neighbor_addr, i.N_status, i.N_willingness);
+    //     for (auto &j : i.N_2hop) 
+    //         printf("%-3d %-3d\n", j.N_2hop_addr, j.N_time);
+    // }
+    cout << this->localLinkTable.size() << " " << this->oneHopNeighborTable.size() << endl;
+    for (auto &i : this->oneHopNeighborTable)
+        cout << i.N_2hop.size() << " ";
+    cout << endl;
 }

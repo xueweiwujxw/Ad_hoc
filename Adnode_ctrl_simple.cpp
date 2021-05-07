@@ -14,8 +14,8 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
     // cout << op_node_id() << " repeat " << this->packetSequenceNumber << endl;
     bool exist = false;
     for (auto &i : this->repeatTable) {
-        // cout << "in this loop" << endl;
         if (i.D_addr == mp.originatorAddress && i.D_seq_num == mp.messageSequenceNumber) {
+            cout << "in this repeatTable" << endl;
             exist = true;
             i.D_time = op_sim_time() + DUP_HOLD_TIME;
             if (i.D_retransmitted == false && mp.messageType != HELLO) {
@@ -40,21 +40,25 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
             tm->updateTopologyTable(mp);
         }
         else if (mp.messageType == HELLO) {
-            cout << op_node_id() << " ";
-            cout << "start process HELLO" << endl;
+            // cout << op_node_id() << " ";
+            // cout << "start process HELLO from: " << mp.originatorAddress << endl;
             tm->updateLocalLink(mp);
-            cout << "update local link end" << endl;
-            tm->createMprSet();
-            cout << "create mpr set end" << endl;
-            tm->getRouteTable();
-            cout << "create route table end" << endl;
-            cout << "process HELLO end" << endl;
+            // cout << "update local link end" << endl;
+            // tm->createMprSet();
+            // cout << "create mpr set end" << endl;
+            // tm->getRouteTable();
+            // cout << "create route table end" << endl;
+            // cout << "process HELLO end" << endl;
         }
     }
     tm->freshTables();
     for (vector<duplicat_set>::iterator it = this->repeatTable.begin(); it != this->repeatTable.end(); ++it)
-        if (it->D_time < op_sim_time())
+        if (it->D_time < op_sim_time()) {
+            cout << "erase happened" << endl;
             this->repeatTable.erase(it);
+            it--;
+        }
+    // cout << this->repeatTable.size() << endl;
     // tm->print();
     // cout << "end repeat" << endl;
 }

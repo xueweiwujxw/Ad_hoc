@@ -22,7 +22,7 @@ void opnet_ctrller::schedule_self(double interval, UNINT code) {
 }
 
 void opnet_ctrller::send(OLSR_packet data, UNINT len, UNINT type) {
-    // cout << op_sim_time() <<  " node: " << op_node_id() << endl;
+    cout << op_sim_time() <<  " node: " << op_node_id() << endl;
     if (type == OPC_HELLO_SEND)
         this->schedule_self(HELLO_INTERVAL, OPC_HELLO_SEND);
     if (type == OPC_TC_SEND)
