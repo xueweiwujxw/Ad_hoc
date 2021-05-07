@@ -58,11 +58,15 @@ namespace opnet {
     class opnet_ctrller
     {
     private:
-        bool rx_blocked;
         int packetCount;
         int packetSequence;
         vector<results> res;
         int resId;
+        double SNR;
+        double DIST;
+        double DELAY;
+        double BER;
+        double tmpCount;
         Adnode_ctrl_simple* acs;
 
     public:
@@ -74,6 +78,7 @@ namespace opnet {
         void on_self();
         void send(OLSR_packet data, UNINT len, UNINT type);
         void schedule_self(double, UNINT);
+        void cacluate(calType ct);
         ~opnet_ctrller();
         void printRess();
     };  

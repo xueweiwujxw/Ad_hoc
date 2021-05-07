@@ -38,15 +38,17 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
             cout << op_node_id() << " ";
             cout << "start process TC" << endl;
             tm->updateTopologyTable(mp);
+            cout << "end process TC" << endl;
         }
         else if (mp.messageType == HELLO) {
             // cout << op_node_id() << " ";
             // cout << "start process HELLO from: " << mp.originatorAddress << endl;
             tm->updateLocalLink(mp);
             // cout << "update local link end" << endl;
-            // tm->createMprSet();
+            tm->createMprSet();
+            // tm->createOldMprSet();
             // cout << "create mpr set end" << endl;
-            // tm->getRouteTable();
+            tm->getRouteTable();
             // cout << "create route table end" << endl;
             // cout << "process HELLO end" << endl;
         }
@@ -54,7 +56,7 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
     tm->freshTables();
     for (vector<duplicat_set>::iterator it = this->repeatTable.begin(); it != this->repeatTable.end(); ++it)
         if (it->D_time < op_sim_time()) {
-            cout << "erase happened" << endl;
+            // cout << "erase happened" << endl;
             this->repeatTable.erase(it);
             it--;
         }
@@ -79,9 +81,10 @@ pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc)
     }
     if (tc) {
         // cout << " TC ";// << endl;
-        message_packet tmp = tm->getTCMsg();
-        if (!tm->mprEmpty())
+        if (!tm->mprEmpty()) {
+            message_packet tmp = tm->getTCMsg();
             opack.messagePackets.push_back(tmp);
+        }
     }
     if (!this->need2Forward.empty()) {
         // cout << " FORWARD ";// << endl;
@@ -94,6 +97,6 @@ pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc)
     return make_pair<OLSR_packet&, UNINT>(opack, opack.getSize()*4);
 }
 
-void Adnode_ctrl_simple::scheduleSelf(double interval, int code) {
-    op_intrpt_schedule_self(op_sim_time() + interval, code);
+void Adnode_ctrl_simple::updateTMWill(double res, calType type) {
+    tm->updateWill(res, type);
 }

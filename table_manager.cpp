@@ -2,7 +2,9 @@
 #include <table_manager.hpp>
 #include <set>
 #include <map>
-
+#include <iostream>
+#include <fstream>
+#include <string>
 
 using namespace std;
 using namespace opnet;
@@ -118,40 +120,51 @@ void table_manager::updateTwoHop(message_packet mh) {
 void table_manager::updateMprTable(message_packet mh) {
     for (auto &i : mh.helloMessage.neighs) {
         if (i.neighcode == MPR_NEIGH) {
-            bool intable = false;
-            for (auto &j : this->mprTable)
-                if (j.MS_addr == mh.originatorAddress) {
-                    intable = true;
-                    j.MS_time = op_sim_time() + mh.vTime;
-                    break;
+            // cout << i.neighborAddress.size() << endl;
+            for (auto &k : i.neighborAddress) {
+                // cout << this->nodeId << " " << k << endl;
+                if (k == this->nodeId) {
+                    bool intable = false;
+                    for (auto &j : this->mprTable)
+                        if (j.MS_addr == mh.originatorAddress) {
+                            intable = true;
+                            j.MS_time = op_sim_time() + mh.vTime;
+                            break;
+                        }
+                    if (!intable) {
+                        MPR item;
+                        item.MS_addr = mh.originatorAddress;
+                        item.MS_time = op_sim_time() + mh.vTime;
+                        this->mprTable.push_back(item);
+                    }
                 }
-            if (!intable) {
-                MPR item;
-                item.MS_addr = mh.originatorAddress;
-                item.MS_time = op_sim_time() + mh.vTime;
             }
+            
         }
     }
+    // cout << this->mprTable.size() << endl;
     // cout << "update mpt table" << endl;
 }
 
 UNINT table_manager::createMprSet() {
+    // cout << "start create mpr set" << endl;
     this->mprSet.clear();
     set<unsigned int> N;
     map<unsigned int, set<unsigned int>> N2;
     map<unsigned int, set<unsigned int>> N_neghbor;
-    map<unsigned int, int> dy;
+    map<unsigned int, unsigned int> N_will;
 
     for (auto &i: this->oneHopNeighborTable) {
-        if (i.N_status == SYM)
+        if (i.N_status == SYM) {
             N.insert(i.N_neighbor_addr);
+            N_will.insert(make_pair(i.N_neighbor_addr, i.N_status));
+        }
     }
-
     for (auto &i : this->oneHopNeighborTable) {
         if (i.N_status == SYM) {
             set<unsigned int> tmp;
             for (auto &j : i.N_2hop)
-                if (i.N_willingness != WILL_NEVER && N.find(j.N_2hop_addr) != N.end() && j.N_2hop_addr != this->nodeId) {
+                if (i.N_willingness != WILL_NEVER && N.find(j.N_2hop_addr) == N.end() && j.N_2hop_addr != this->nodeId) {
                     tmp.insert(j.N_2hop_addr);
                     if (N2.find(j.N_2hop_addr) == N2.end()) {
                         set<UNINT> oneNeighbor;
@@ -164,50 +177,241 @@ UNINT table_manager::createMprSet() {
             N_neghbor.insert(make_pair(i.N_neighbor_addr, tmp));
         }
     }
-    
-    // 计算D(y)
-    for (auto &i : N_neghbor) {
-        int count = i.second.size();
-        dy.insert(make_pair(i.first, count));
-    }
-    
-    while (true) {
+    // cout << "this node id: " << this->nodeId << endl;
+    // cout << "N set: " << endl;
+    // for (auto &xx: N_neghbor) {
+    //     cout << xx.first << ": ";
+    //     for (auto &k : xx.second)
+    //         cout << k << " ";
+    //     cout << endl;
+    // }
+    // cout << endl << "N2 set: " << endl;
+    // for (auto &xx : N2) {
+    //     cout << xx.first << ": ";
+    //     for (auto &k : xx.second)
+    //         cout << k << " ";
+    //     cout << endl;
+    // }
+    // cout << endl;
+    // if (this->nodeId == 7) {
+    //     cout << "this node id: " << this->nodeId << endl;
+    //     cout << "N set: " << endl;
+    //     for (auto &xx: N_neghbor) {
+    //         cout << xx.first << ": ";
+    //         for (auto &k : xx.second)
+    //             cout << k << " ";
+    //         cout << endl;
+    //     }
+    //     cout << endl << "N2 set: " << endl;
+    //     for (auto &xx : N2) {
+    //         cout << xx.first << ": ";
+    //         for (auto &k : xx.second)
+    //             cout << k << " ";
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    // }
+    while (!N2.empty()) {
         // 在N2中选择唯一可达的点，将其对应的N加入MPR，删除N2中被MPR覆盖的点
         for(auto &i : N2) {
             if (i.second.size() == 1) {
                 unsigned int mprN = *i.second.begin();
                 this->mprSet.insert(mprN);
-                for (auto &k : N_neghbor[mprN])
+                for (auto &k : N_neghbor[mprN]) {
                     N2.erase(k);
+                }
                 N_neghbor.erase(mprN);
             }
         }
-        // N2被全覆盖，则完成搜索
+        for (auto &i : N_neghbor) {
+            for (auto &j : i.second) {
+                bool inN2 = false;
+                for (auto &k : N2)
+                    if (j == k.first) {
+                        inN2 = true;
+                        break;
+                    }
+                if (!inN2)
+                    i.second.erase(j);
+            }
+        }
         if (N2.empty())
             break;
-        else {
-            // 从N中选择可达性最小的点，并将其删除
-            unsigned int min = INT_MAX;
-            unsigned int order;
-            for (auto &k: N_neghbor) {
-                unsigned int count = 0;
-                for (auto &l : k.second) 
-                    if (N2.find(l) != N2.end())
-                        count++;
-                if (count < min) {
-                    min = count;
-                    order = k.first;
+        // 从N中选择可达性最小的点，并将其删除，可达性相同时，删除willingness最小的点
+        unsigned int minCount = INT_MAX;
+        unsigned int order;
+        set<unsigned int> equalSet;
+        for (auto &k: N_neghbor) {
+            if (k.second.size() < minCount) {
+                minCount = k.second.size();
+                order = k.first;
+                equalSet.clear();
+                equalSet.insert(k.first);
+            }
+            else if (k.second.size() == minCount) {
+                equalSet.insert(k.first);
+            }
+        }
+        if (equalSet.size() > 1) {
+            UNINT willing = 6;
+            for (auto &i : equalSet) {
+                if (N_will[i] < willing) {
+                    willing = N_will[i];
+                    order = i;
                 }
             }
-            // 删除前需要将N2中记录的邻接关系删除
-            for (auto &k : N_neghbor[order]) {
-                map<unsigned int, set<unsigned int>>::iterator it = N2.find(k);
-                if (it != N2.end())
-                    it->second.erase(k);
-            }
-            N_neghbor.erase(order);
+        }
+        for (auto &k : N2) {
+            if (k.second.find(order) != k.second.end())
+                k.second.erase(order);
+        }
+        N_neghbor.erase(order);
+    }
+    // cout << "end create mpr set" << endl;
+    // fstream f;
+    // string filename = to_string(this->nodeId) + "mpr.txt";
+    // f.open(filename, ios::out | ios::app);
+    // f << "node " << this->nodeId << " mpr set: " << op_sim_time() << endl;
+    // for (auto &i : this->mprSet) 
+    //     f << i << " ";
+    // f << endl;
+    // f.close();
+    return this->mprSet.size();
+}
+
+UNINT table_manager::createOldMprSet() {
+    // cout << "start create mpr set" << endl;
+    this->mprSet.clear();
+    set<unsigned int> N;
+    map<unsigned int, set<unsigned int>> N2;
+    map<unsigned int, set<unsigned int>> N_neghbor;
+    map<unsigned int, int> dy;
+    map<unsigned int, unsigned int> N_will;
+
+    for (auto &i: this->oneHopNeighborTable) {
+        if (i.N_status == SYM) {
+            N.insert(i.N_neighbor_addr);
+            N_will.insert(make_pair(i.N_neighbor_addr, i.N_status));
         }
     }
+
+    for (auto &i : this->oneHopNeighborTable) {
+        if (i.N_status == SYM) {
+            set<unsigned int> tmp;
+            for (auto &j : i.N_2hop)
+                if (i.N_willingness != WILL_NEVER && N.find(j.N_2hop_addr) == N.end() && j.N_2hop_addr != this->nodeId) {
+                    tmp.insert(j.N_2hop_addr);
+                    if (N2.find(j.N_2hop_addr) == N2.end()) {
+                        set<UNINT> oneNeighbor;
+                        oneNeighbor.insert(i.N_neighbor_addr);
+                        N2.insert(make_pair(j.N_2hop_addr, oneNeighbor));
+                    }
+                    else
+                        N2[j.N_2hop_addr].insert(i.N_neighbor_addr);
+                }
+            N_neghbor.insert(make_pair(i.N_neighbor_addr, tmp));
+        }
+    }
+
+    for (auto &i : N_neghbor) {
+        int count = i.second.size();
+        dy.insert(make_pair(i.first, count));
+    }
+    // if (this->nodeId == 7) {
+    //     cout << "this node id: " << this->nodeId << endl;
+    //     cout << "N set: " << endl;
+    //     for (auto &xx: N_neghbor) {
+    //         cout << xx.first << ": ";
+    //         for (auto &k : xx.second)
+    //             cout << k << " ";
+    //         cout << endl;
+    //     }
+    //     cout << endl << "N2 set: " << endl;
+    //     for (auto &xx : N2) {
+    //         cout << xx.first << ": ";
+    //         for (auto &k : xx.second)
+    //             cout << k << " ";
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    // }
+    
+    // cout << "this node id: " << this->nodeId << endl;
+    // cout << "N set: " << endl;
+    // for (auto &xx: N_neghbor) {
+    //     cout << xx.first << ": ";
+    //     for (auto &k : xx.second)
+    //         cout << k << " ";
+    //     cout << endl;
+    // }
+    // cout << endl << "N2 set: " << endl;
+    // for (auto &xx : N2) {
+    //     cout << xx.first << ": ";
+    //     for (auto &k : xx.second)
+    //         cout << k << " ";
+    //     cout << endl;
+    // }
+    // cout << endl;
+    while (!N2.empty()) {
+        // 在N2中选择唯一可达的点，将其对应的N加入MPR，删除N2中被MPR覆盖的点
+        for(auto &i : N2) {
+            if (i.second.size() == 1) {
+                unsigned int mprN = *i.second.begin();
+                this->mprSet.insert(mprN);
+                for (auto &k : N_neghbor[mprN]) {
+                    N2.erase(k);
+                }
+                N_neghbor.erase(mprN);
+            }
+        }
+        if (N2.empty())
+            break;
+        int maxCount = 0;
+        int mprNode;
+        set<unsigned int> equalSet;
+        for (auto &i : N_neghbor) {
+            unsigned int count = 0;
+            for (auto &l : i.second)
+                if (N2.find(l) != N2.end())
+                    count++;
+            if (count > maxCount) {
+                maxCount = count;
+                mprNode = i.first;
+                equalSet.clear();
+                equalSet.insert(i.first);
+            }
+            else if (count == maxCount) {
+                equalSet.insert(i.first);
+            }
+        }
+        if (equalSet.size() > 1) {
+            int maxDy = -1;
+            for (auto &i : equalSet) {
+                if (dy[i] > maxDy) {
+                    maxDy = dy[i];
+                    mprNode = i;
+                }
+            }
+        }
+        if (equalSet.size() == 0) {
+            break;
+        }
+        this->mprSet.insert(mprNode);
+        for (auto &k : N_neghbor[mprNode]) {
+            N2.erase(k);
+        }
+        N_neghbor.erase(mprNode);
+    }
+    // cout << "end create mpr set" << endl;
+    // fstream f;
+    // string filename = to_string(this->nodeId) + "oldmpr.txt";
+    // f.open(filename, ios::out | ios::app);
+    // f << "node " << this->nodeId << " mpr set: " << op_sim_time() << endl;  
+    // for (auto &i : this->mprSet) 
+    //     f << i << " ";
+    // f << endl;
+    // f.close();
+
     return this->mprSet.size();
 }
 
@@ -307,14 +511,14 @@ message_packet table_manager::getHelloMsg() {
         else 
             lslo.neighborAddress.push_back(i.L_neighbor_iface_addr);
         bool inmpr = false, inneigh = false;
-        for (auto &j : this->mprTable) {
-            if (j.MS_addr == i.L_neighbor_iface_addr) {
+        for (auto &j : this->mprSet) {
+            if (j == i.L_neighbor_iface_addr) {
                 inmpr = true;
                 break;
             }
         }
         for (auto &j : this->oneHopNeighborTable) {
-            if (j.N_neighbor_addr == i.L_neighbor_iface_addr) {
+            if (j.N_neighbor_addr == i.L_neighbor_iface_addr && j.N_status == SYM) {
                 inneigh = true;
                 break;
             }
@@ -327,6 +531,7 @@ message_packet table_manager::getHelloMsg() {
             nsnot.neighborAddress.push_back(i.L_neighbor_iface_addr);
     }
     message_hello mph;
+    // cout << nsmpr.neighborAddress.size() << " " << nssym.neighborAddress.size() << " " << nsnot.neighborAddress.size() << endl;
     if (!lslo.neighborAddress.empty()) 
         mph.links.push_back(lslo);
     if (!lsas.neighborAddress.empty())
@@ -339,7 +544,7 @@ message_packet table_manager::getHelloMsg() {
         mph.neighs.push_back(nssym);
     if (!nsmpr.neighborAddress.empty())
         mph.neighs.push_back(nsmpr);
-    mph.willingness = WILL_DEFAULT;
+    mph.willingness = this->willSelf;
     mh.helloMessage = mph;
     mh.messageSize = mh.getSize();
     return mh;
@@ -347,13 +552,9 @@ message_packet table_manager::getHelloMsg() {
 
 message_packet table_manager::getTCMsg() {
     message_packet mt(TC, TOP_HOLD_TIME, this->nodeId, 255, 0, this->messageSequenceNumber++);
-    // mt.messageType = TC;
-    // mt.vTime = TOP_HOLD_TIME;
-    // mt.originatorAddress = this->nodeId;
-    // mt.TTL = 255;
-    // mt.hopCount = 0;
-    // mt.messageSequenceNumber = this->messageSequenceNumber++;
     message_tc mpt;
+    // if (this->mprTable.empty())
+        // cout << this->nodeId << " " << op_sim_time() << ": mprTable empty, mprSet size: " << this->mprSet.size() << endl;
     mpt.MSSN = this->MSSN++;
     for (auto &i : this->mprTable) {
         if (i.MS_time >= op_sim_time()) {
@@ -369,6 +570,11 @@ void table_manager::freshTables() {
     // cout << this->nodeId << " fresh start " << endl;
     for (vector<local_link>::iterator it = this->localLinkTable.begin(); it != this->localLinkTable.end(); ++it)
         if (it->L_time < op_sim_time()) {
+            for (vector<one_hop_neighbor>::iterator oit = this->oneHopNeighborTable.begin(); oit != this->oneHopNeighborTable.end(); ++oit) 
+                if (oit->N_neighbor_addr == it->L_neighbor_iface_addr) {
+                    this->oneHopNeighborTable.erase(oit);
+                    oit--;
+                }
             this->localLinkTable.erase(it);
             it--;
         }
@@ -408,4 +614,9 @@ void table_manager::print() {
     for (auto &i : this->oneHopNeighborTable)
         cout << i.N_2hop.size() << " ";
     cout << endl;
+}
+
+void table_manager::updateWill(double res, calType ct) {
+    this->willSelf = WILL_DEFAULT;
+    cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
 }

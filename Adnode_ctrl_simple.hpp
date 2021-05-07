@@ -29,6 +29,6 @@ namespace opnet
         pair<OLSR_packet, UNINT> getOLSRPackets(bool hello, bool tc);
         void recvPackets(OLSR_packet opack);
         void forwardPackets(message_packet mp);
-        void scheduleSelf(double interval, int code);
+        void updateTMWill(double, calType);
     };
 } // namespace opnet

@@ -10,6 +10,11 @@ opnet_ctrller::opnet_ctrller() {
     // this->packetSequence = 0;
     this->packetCount = 0;
     this->resId = 0;
+    this->SNR = 0;
+    this->DIST = 0;
+    this->tmpCount = 0;
+    this->BER = 0;
+    this->DELAY = 0;
 }
 opnet_ctrller::~opnet_ctrller() { 
     delete acs;
@@ -22,7 +27,7 @@ void opnet_ctrller::schedule_self(double interval, UNINT code) {
 }
 
 void opnet_ctrller::send(OLSR_packet data, UNINT len, UNINT type) {
-    cout << op_sim_time() <<  " node: " << op_node_id() << endl;
+    // cout << op_sim_time() <<  " node: " << op_node_id() << endl;
     if (type == OPC_HELLO_SEND)
         this->schedule_self(HELLO_INTERVAL, OPC_HELLO_SEND);
     if (type == OPC_TC_SEND)
@@ -85,6 +90,7 @@ void opnet_ctrller::on_sim_start() {
     this->acs = new Adnode_ctrl_simple(op_node_id());
     this->schedule_self(nodeId / 20.0, OPC_HELLO_SEND);
     this->schedule_self(nodeId / 20.0+0.005, OPC_TC_SEND);
+    this->schedule_self(nodeId / 20.0+0.001+WILL_UP_TIME, OPC_QUA_CAL);
 }
 
 void opnet_ctrller::on_self() {
@@ -95,11 +101,45 @@ void opnet_ctrller::on_self() {
         this->send(data.first, data.second, OPC_TC_SEND);
         // cout << "send TC" << endl;
     }
-    if (op_intrpt_code() == OPC_HELLO_SEND) {
+    else if (op_intrpt_code() == OPC_HELLO_SEND) {
         data = this->acs->getOLSRPackets(1, 0);
         this->send(data.first, data.second, OPC_HELLO_SEND);
         // cout << "send HELLO" << endl;
     }
+    else if (op_intrpt_code() == OPC_QUA_CAL) {
+        this->cacluate(TYPE_SNR);
+    }
+}
+
+void opnet_ctrller::cacluate(calType ct) {
+    this->schedule_self(WILL_UP_TIME, OPC_QUA_CAL);
+    double res = 0;
+    if (ct == TYPE_DIST) {
+        res = this->DIST / this->tmpCount;
+        this->acs->updateTMWill(res, ct);
+        this->DIST = 0;
+        this->tmpCount = 0;
+    }
+    else if (ct == TYPE_BER) {
+        res = this->BER / this->tmpCount;
+        this->acs->updateTMWill(res, ct);
+        this->BER = 0;
+        this->tmpCount = 0;
+    }
+    else if (ct == TYPE_DELAY) {
+        res = this->DELAY / this->tmpCount;
+        this->acs->updateTMWill(res, ct);
+        this->DELAY = 0;
+        this->tmpCount = 0;
+    }
+    else if (ct == TYPE_SNR) {
+        res = this->SNR / this->tmpCount;
+        // cout << "res: " << this->SNR << " " << this->tmpCount << endl;
+        this->acs->updateTMWill(res, ct);
+        this->SNR = 0;
+        this->tmpCount = 0;
+    }
+    
 }
 
 void opnet_ctrller::on_stream(int id) {
@@ -166,18 +206,21 @@ void opnet_ctrller::on_stream(int id) {
         np.messagePackets.push_back(mp);
     }
     // cout << "recv packets len: " << len << endl;
-    if (np.packetLenth != 4) {
-        for (auto &i : np.messagePackets) {
-            if (i.originatorAddress != op_node_id()) {
-                // cout << op_node_id() << " " << i.originatorAddress << " " << i.messageSequenceNumber << endl;
-                results item(this->resId, op_sim_time(), "RECV", i.originatorAddress, i.messageSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR), i.messageType);
-                this->resId++;
-                this->res.push_back(item);
-                this->packetCount++;
-            }
+    for (auto &i : np.messagePackets) {
+        if (i.originatorAddress != op_node_id()) {
+            // cout << op_node_id() << " " << i.originatorAddress << " " << i.messageSequenceNumber << endl;
+            results item(this->resId, op_sim_time(), "RECV", i.originatorAddress, i.messageSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR), i.messageType);
+            this->resId++;
+            this->res.push_back(item);
+            this->packetCount++;
+            this->tmpCount++;
+            this->DIST += op_td_get_dbl(p, OPC_TDA_RA_END_DIST);
+            this->DELAY += op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL);
+            this->BER += op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER);
+            this->SNR += op_td_get_dbl(p, OPC_TDA_RA_SNR);
+            this->acs->recvPackets(np);
         }
     }
-    this->acs->recvPackets(np);
     op_pk_destroy(p);
     // cout << "recv end" << endl;
 }

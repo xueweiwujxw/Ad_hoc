@@ -30,5 +30,6 @@ OPNET_models_std
 *.o
 *.cml
 *.docx
+*.txt
 build
 boost

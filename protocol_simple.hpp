@@ -11,13 +11,23 @@ namespace opnet
 #define NEIGHB_HOLD_TIME 6
 #define TOP_HOLD_TIME 15
 #define DUP_HOLD_TIME 30
+#define WILL_UP_TIME max(HELLO_INTERVAL, TC_INTERVAL)
 
 #define UNINT unsigned int
 
     enum ScheduleCode
     {
         OPC_HELLO_SEND,
-        OPC_TC_SEND
+        OPC_TC_SEND,
+        OPC_QUA_CAL
+    };
+
+    enum calType 
+    {
+        TYPE_DIST,
+        TYPE_BER,
+        TYPE_DELAY,
+        TYPE_SNR,
     };
 
     enum LinkCode
