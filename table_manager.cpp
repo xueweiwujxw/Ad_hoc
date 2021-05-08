@@ -193,24 +193,6 @@ UNINT table_manager::createMprSet() {
     //     cout << endl;
     // }
     // cout << endl;
-    // if (this->nodeId == 7) {
-    //     cout << "this node id: " << this->nodeId << endl;
-    //     cout << "N set: " << endl;
-    //     for (auto &xx: N_neghbor) {
-    //         cout << xx.first << ": ";
-    //         for (auto &k : xx.second)
-    //             cout << k << " ";
-    //         cout << endl;
-    //     }
-    //     cout << endl << "N2 set: " << endl;
-    //     for (auto &xx : N2) {
-    //         cout << xx.first << ": ";
-    //         for (auto &k : xx.second)
-    //             cout << k << " ";
-    //         cout << endl;
-    //     }
-    //     cout << endl;
-    // }
     while (!N2.empty()) {
         // 在N2中选择唯一可达的点，将其对应的N加入MPR，删除N2中被MPR覆盖的点
         for(auto &i : N2) {
@@ -317,25 +299,6 @@ UNINT table_manager::createOldMprSet() {
         int count = i.second.size();
         dy.insert(make_pair(i.first, count));
     }
-    // if (this->nodeId == 7) {
-    //     cout << "this node id: " << this->nodeId << endl;
-    //     cout << "N set: " << endl;
-    //     for (auto &xx: N_neghbor) {
-    //         cout << xx.first << ": ";
-    //         for (auto &k : xx.second)
-    //             cout << k << " ";
-    //         cout << endl;
-    //     }
-    //     cout << endl << "N2 set: " << endl;
-    //     for (auto &xx : N2) {
-    //         cout << xx.first << ": ";
-    //         for (auto &k : xx.second)
-    //             cout << k << " ";
-    //         cout << endl;
-    //     }
-    //     cout << endl;
-    // }
-    
     // cout << "this node id: " << this->nodeId << endl;
     // cout << "N set: " << endl;
     // for (auto &xx: N_neghbor) {
