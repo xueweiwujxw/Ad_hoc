@@ -440,6 +440,9 @@ void table_manager::updateTopologyTable(message_packet mt) {
             this->topologyTable.push_back(item);
         }
     }
+    cout << "node: " << this->nodeId << endl;
+    for (auto &i : this->topologyTable) 
+        cout << i.T_dest_addr << " " << i.T_last_addr << " " << i.T_seq << " " << i.T_time << endl;
 }
 
 void table_manager::getRouteTable() {
@@ -466,6 +469,9 @@ void table_manager::getRouteTable() {
     }
     // 迭代加入拓扑项
     int h = 2;
+    // cout << "start loop " << endl;
+    // cout << "before topo size: " << this->topologyTable.size() << endl;
+    for (auto &i : this->topologyTable)
     while (1) {
         bool hasNewItem = false;
         for (auto &i : this->topologyTable) {
@@ -482,17 +488,23 @@ void table_manager::getRouteTable() {
                         route_item item;
                         item.R_dest_addr = i.T_dest_addr;
                         item.R_next_addr = j.R_dest_addr;
-                        item.R_dist = h + 1;
+                        item.R_dist = h+1;
                         hasNewItem = true;
+                        this->routeTable.push_back(item);
                     }
                 }
             }
-            else continue;
         }
+        h++;
         if (!hasNewItem)
             break;
     }
-    
+    // cout << "after topo size: " << this->topologyTable.size() << endl;
+    // // cout << "end loop " << endl;
+    // cout << "node: " << this->nodeId << endl;
+    // for (auto &i : this->routeTable) {
+    //     cout << i.R_dest_addr << " " << i.R_next_addr << " " << i.R_dist << endl;
+    // }
 }
 
 message_packet table_manager::getHelloMsg() {
@@ -618,5 +630,13 @@ void table_manager::print() {
 
 void table_manager::updateWill(double res, calType ct) {
     this->willSelf = WILL_DEFAULT;
-    cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
+    // cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
+}
+
+bool table_manager::isInMprTable(UNINT findNode) {
+    for (auto & i : this->mprTable) {
+        if (i.MS_addr == findNode)
+            return true;
+    }
+    return false;
 }

@@ -38,6 +38,7 @@ namespace opnet
         bool mprEmpty();
         void print();
         void updateWill(double, calType);
+        bool isInMprTable(UNINT);
     protected:
         void updateMprTable(message_packet mh);
         void updateOneHop(message_packet mh);

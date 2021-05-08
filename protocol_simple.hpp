@@ -185,11 +185,12 @@ namespace opnet
     
     struct OLSR_packet
     {
+        UNINT packOri;
         UNINT packetLenth: 16;
         UNINT packetSequenceNumber: 16;
         vector<message_packet> messagePackets;
         int getSize() {
-            UNINT size = 1;
+            UNINT size = 2;
             for (auto &i: this->messagePackets) {
                 size += i.getSize();
             }

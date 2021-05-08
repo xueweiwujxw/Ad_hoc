@@ -35,6 +35,7 @@ void opnet_ctrller::send(OLSR_packet data, UNINT len, UNINT type) {
     int needSpace = data.getSize();
     UNINT *format = new UNINT[needSpace];
     int mark = 0;
+    format[mark++] = data.packOri;
     format[mark++] = (data.packetLenth << 16) | (data.packetSequenceNumber & 0xffff);
     for (auto &i : data.messagePackets) {
         format[mark++] = (i.messageType << 24) | ((i.vTime & 0xff) << 16) |  (i.messageSize & 0xffff);
@@ -150,6 +151,7 @@ void opnet_ctrller::on_stream(int id) {
     UNINT* format = reinterpret_cast<UNINT*>(buffer);
     OLSR_packet np;
     int mark = 0;
+    np.packOri = format[mark++];
     np.packetSequenceNumber = format[mark] & 0xffff;
     np.packetLenth = (format[mark++] & 0xffff0000) >> 16;
     // cout << op_node_id() << " recv " << len << " packet len: " << np.packetLenth << endl;

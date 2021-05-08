@@ -5,7 +5,7 @@
 using namespace std;
 using namespace opnet;
 
-void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
+void Adnode_ctrl_simple::updateRepeatTable(message_packet mp, UNINT packOri) {
     if (mp.TTL <= 0 || mp.originatorAddress == this->nodeId) {
         // cout << "direc return" << endl;
         // cout << mp.TTL << endl;
@@ -15,10 +15,12 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
     bool exist = false;
     for (auto &i : this->repeatTable) {
         if (i.D_addr == mp.originatorAddress && i.D_seq_num == mp.messageSequenceNumber) {
-            cout << "in this repeatTable" << endl;
+            // cout << "in this repeatTable" << endl;
             exist = true;
             i.D_time = op_sim_time() + DUP_HOLD_TIME;
-            if (i.D_retransmitted == false && mp.messageType != HELLO) {
+            if (i.D_retransmitted == false && mp.messageType != HELLO && mp.TTL > 1 && (tm->isInMprTable(packOri))) {
+                mp.TTL--;
+                mp.hopCount++;
                 this->need2Forward.push_back(mp);
                 i.D_retransmitted = true;
             }
@@ -33,12 +35,20 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp) {
         item.D_retransmitted = false;
         item.D_received = true;
         item.D_time = DUP_HOLD_TIME + op_sim_time();
-        this->repeatTable.push_back(item);
+        if (mp.messageType != HELLO) {
+            if (mp.TTL > 1 && tm->isInMprTable(packOri)){
+                mp.TTL--;
+                mp.hopCount++;
+                this->need2Forward.push_back(mp);
+                item.D_retransmitted = true;
+            }
+            this->repeatTable.push_back(item);
+        }
         if (mp.messageType == TC) {
-            cout << op_node_id() << " ";
-            cout << "start process TC" << endl;
+            // cout << op_node_id() << " ";
+            // cout << op_sim_time() << ": start process TC from " << mp.originatorAddress << endl;
             tm->updateTopologyTable(mp);
-            cout << "end process TC" << endl;
+            // cout << "end process TC" << endl;
         }
         else if (mp.messageType == HELLO) {
             // cout << op_node_id() << " ";
@@ -69,7 +79,7 @@ void Adnode_ctrl_simple::recvPackets(OLSR_packet opack) {
     // if (opack->packetLenth == 4)
     //     return;
     for (auto &i : opack.messagePackets)
-        this->updateRepeatTable(i);
+        this->updateRepeatTable(i, opack.packOri);
 }
 
 pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc) {
@@ -78,22 +88,24 @@ pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc)
     if (hello) {
         // cout << " HELLO ";// << endl;
         opack.messagePackets.push_back(tm->getHelloMsg());
+        // cout << " HELLO " << endl;
     }
     if (tc) {
-        // cout << " TC ";// << endl;
         if (!tm->mprEmpty()) {
             message_packet tmp = tm->getTCMsg();
             opack.messagePackets.push_back(tmp);
         }
+        // cout << " TC " << endl;
     }
     if (!this->need2Forward.empty()) {
-        // cout << " FORWARD ";// << endl;
         for (auto &i : this->need2Forward)
             opack.messagePackets.push_back(i);
+        cout << " FORWARD " << endl;
     }
     // cout << " get packets success" << endl;
     // opack->packetLenth = 4;
     opack.packetSequenceNumber = this->packetSequenceNumber++;
+    opack.packOri = this->nodeId;
     return make_pair<OLSR_packet&, UNINT>(opack, opack.getSize()*4);
 }
 

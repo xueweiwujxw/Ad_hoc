@@ -14,8 +14,8 @@
 ### 顶层控制
 * 发包 :white_check_mark:
 * 收包 :white_check_mark:
-* 转发 :o:
-* 重复判断 :o:
+* 转发 :white_check_mark:
+* 重复判断 :white_check_mark:
 
 ### 数据收集
 * 仿真结束统计数据 :o:
