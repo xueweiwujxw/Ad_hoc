@@ -16,6 +16,7 @@
 * 收包 :white_check_mark:
 * 转发 :white_check_mark:
 * 重复判断 :white_check_mark:
+* 链路质量评估 :o:
 
 ### 数据收集
 * 仿真结束统计数据 :o:
