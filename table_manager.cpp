@@ -23,7 +23,6 @@ void table_manager::updateLocalLink(message_packet mh) {
         item.L_SYM_time = op_sim_time() - 1;
         item.L_time = op_sim_time() + mh.vTime;
         item.L_ASYM_time = op_sim_time() + mh.vTime;
-        item.L_quality = 100;
         this->localLinkTable.push_back(item);
     }
     else {
@@ -157,7 +156,7 @@ UNINT table_manager::createMprSet() {
     for (auto &i: this->oneHopNeighborTable) {
         if (i.N_status == SYM) {
             N.insert(i.N_neighbor_addr);
-            N_will.insert(make_pair(i.N_neighbor_addr, i.N_status));
+            N_will.insert(make_pair(i.N_neighbor_addr, i.N_willingness));
         }
     }
     for (auto &i : this->oneHopNeighborTable) {
@@ -403,9 +402,9 @@ void table_manager::updateTopologyTable(message_packet mt) {
             this->topologyTable.push_back(item);
         }
     }
-    cout << "node: " << this->nodeId << endl;
-    for (auto &i : this->topologyTable) 
-        cout << i.T_dest_addr << " " << i.T_last_addr << " " << i.T_seq << " " << i.T_time << endl;
+    // cout << "node: " << this->nodeId << endl;
+    // for (auto &i : this->topologyTable) 
+    //     cout << i.T_dest_addr << " " << i.T_last_addr << " " << i.T_seq << " " << i.T_time << endl;
 }
 
 void table_manager::getRouteTable() {
@@ -579,7 +578,7 @@ bool table_manager::mprEmpty() {
 void table_manager::print() {
     cout << this->nodeId << endl;
     // for (auto &i : this->localLinkTable)
-    //     printf("%-3d %-3d %-3d %-3d %-3d\n", i.L_neighbor_iface_addr, i.L_quality, i.L_SYM_time, i.L_ASYM_time, i.L_time);
+    //     printf("%-3d %-3d %-3d %-3d\n", i.L_neighbor_iface_addr, i.L_SYM_time, i.L_ASYM_time, i.L_time);
     // for (auto &i : this->oneHopNeighborTable) {
     //     printf("%-3d %-3d %-3d\n", i.N_neighbor_addr, i.N_status, i.N_willingness);
     //     for (auto &j : i.N_2hop) 

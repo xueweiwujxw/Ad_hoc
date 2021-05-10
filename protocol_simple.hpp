@@ -205,7 +205,6 @@ namespace opnet
         UNINT L_SYM_time;
         UNINT L_ASYM_time;
         UNINT L_time;
-        UNINT L_quality;
     };
 
     struct two_hop_neighbor
