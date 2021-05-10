@@ -68,6 +68,10 @@ namespace opnet {
         double BER;
         double tmpCount;
         Adnode_ctrl_simple* acs;
+        vector<pair<double, double>> distArray;
+        vector<pair<double, double>> delayArray;
+        vector<pair<double, double>> berArray;
+        vector<pair<double, double>> snrArray;
 
     public:
         opnet_ctrller();

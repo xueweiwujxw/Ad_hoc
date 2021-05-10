@@ -592,7 +592,7 @@ void table_manager::print() {
 
 void table_manager::updateWill(double res, calType ct) {
     this->willSelf = WILL_DEFAULT;
-    // cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
+    cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
 }
 
 bool table_manager::isInMprTable(UNINT findNode) {

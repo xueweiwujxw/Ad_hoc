@@ -114,33 +114,144 @@ void opnet_ctrller::on_self() {
 
 void opnet_ctrller::cacluate(calType ct) {
     this->schedule_self(WILL_UP_TIME, OPC_QUA_CAL);
+    // cout << "WILL_UP_TIME: " << WILL_UP_TIME << endl;
+    // 时间权重分配
+    double weigh[WILL_UP_TIME];
+    if (WILL_UP_TIME & 1 == 1) {
+        int mid = WILL_UP_TIME / 2;
+        double cnt = 1 / double(WILL_UP_TIME) / (double(WILL_UP_TIME) - 1);
+        weigh[mid] = 1 / double(WILL_UP_TIME);
+        for (int i = 1; i < (WILL_UP_TIME / 2 + 1); ++i) {
+            weigh[mid - i] = 1 / double(WILL_UP_TIME) - cnt * i;
+            weigh[mid + i] = 1 / double(WILL_UP_TIME) + cnt * i;
+        }
+    }
+    else {
+        int midbe = WILL_UP_TIME / 2 - 1;
+        int midaf = WILL_UP_TIME / 2;
+        double cnt = 1 / double(WILL_UP_TIME) / double(WILL_UP_TIME);
+        for (int i = 0; i < (WILL_UP_TIME / 2); ++i) {
+            weigh[midbe - i] = 1 / double(WILL_UP_TIME) - cnt * (i + 1);
+            weigh[midaf + i] = 1 / double(WILL_UP_TIME) + cnt * (i + 1);
+        }
+    }
+    // for (auto &i : weigh)
+    //     cout << i << " ";
+    // cout << endl;
     double res = 0;
     if (ct == TYPE_DIST) {
-        res = this->DIST / this->tmpCount;
+        res = 0;
+        vector<vector<double>> rec;
+        for (int j = WILL_UP_TIME; j > 0; --j) {
+            vector<double> tmp;
+            rec.push_back(tmp);
+        }
+        for (auto &i : this->distArray) {
+            double diff = op_sim_time() - i.first;
+            for (int k = 0; k < WILL_UP_TIME; ++k)
+                if (diff >= k && diff < k+1) {
+                    rec[k].push_back(i.second);
+                    break;
+                }
+        }
+        for (int i = 0; i < rec.size(); ++i) {
+            if (rec[i].empty())
+                continue;
+            double inres = 0;
+            for (auto &j : rec[i])
+                inres += j * weigh[i];
+            res += inres / double(rec[i].size());
+        }
         this->acs->updateTMWill(res, ct);
         this->DIST = 0;
         this->tmpCount = 0;
     }
     else if (ct == TYPE_BER) {
-        res = this->BER / this->tmpCount;
+        res = 0;
+        vector<vector<double>> rec;
+        for (int j = WILL_UP_TIME; j > 0; --j) {
+            vector<double> tmp;
+            rec.push_back(tmp);
+        }
+        for (auto &i : this->berArray) {
+            double diff = op_sim_time() - i.first;
+            for (int k = 0; k < WILL_UP_TIME; ++k)
+                if (diff >= k && diff < k+1) {
+                    rec[k].push_back(i.second);
+                    break;
+                }
+        }
+        for (int i = 0; i < rec.size(); ++i) {
+            if (rec[i].empty())
+                continue;
+            double inres = 0;
+            for (auto &j : rec[i])
+                inres += j * weigh[i];
+            res += inres / double(rec[i].size());
+        }
         this->acs->updateTMWill(res, ct);
         this->BER = 0;
         this->tmpCount = 0;
     }
     else if (ct == TYPE_DELAY) {
-        res = this->DELAY / this->tmpCount;
+        res = 0;
+        vector<vector<double>> rec;
+        for (int j = WILL_UP_TIME; j > 0; --j) {
+            vector<double> tmp;
+            rec.push_back(tmp);
+        }
+        for (auto &i : this->delayArray) {
+            double diff = op_sim_time() - i.first;
+            for (int k = 0; k < WILL_UP_TIME; ++k)
+                if (diff >= k && diff < k+1) {
+                    rec[k].push_back(i.second);
+                    break;
+                }
+        }
+        for (int i = 0; i < rec.size(); ++i) {
+            if (rec[i].empty())
+                continue;
+            double inres = 0;
+            for (auto &j : rec[i])
+                inres += j * weigh[i];
+            res += inres / double(rec[i].size());
+        }
         this->acs->updateTMWill(res, ct);
         this->DELAY = 0;
         this->tmpCount = 0;
     }
     else if (ct == TYPE_SNR) {
-        res = this->SNR / this->tmpCount;
-        // cout << "res: " << this->SNR << " " << this->tmpCount << endl;
+        res = 0;
+        vector<vector<double>> rec;
+        for (int j = WILL_UP_TIME; j > 0; --j) {
+            vector<double> tmp;
+            rec.push_back(tmp);
+        }
+        for (auto &i : this->snrArray) {
+            double diff = op_sim_time() - i.first;
+            for (int k = 0; k < WILL_UP_TIME; ++k)
+                if (diff >= k && diff < k+1) {
+                    rec[k].push_back(i.second);
+                    break;
+                }
+        }
+        for (int i = 0; i < rec.size(); ++i) {
+            if (rec[i].empty())
+                continue;
+            double inres = 0;
+            for (auto &j : rec[i])
+                inres += j * weigh[i];
+            res += inres / double(rec[i].size());
+        }
         this->acs->updateTMWill(res, ct);
         this->SNR = 0;
         this->tmpCount = 0;
     }
-    
+    // cout << this->distArray.size() << " " << this->delayArray.size() << " " << this->berArray.size() << " " << this->snrArray.size() << endl;
+    this->distArray.clear();
+    this->delayArray.clear();
+    this->berArray.clear();
+    this->snrArray.clear();
 }
 
 void opnet_ctrller::on_stream(int id) {
@@ -208,20 +319,26 @@ void opnet_ctrller::on_stream(int id) {
         np.messagePackets.push_back(mp);
     }
     // cout << "recv packets len: " << len << endl;
-    for (auto &i : np.messagePackets) {
-        if (i.originatorAddress != op_node_id()) {
-            // cout << op_node_id() << " " << i.originatorAddress << " " << i.messageSequenceNumber << endl;
-            results item(this->resId, op_sim_time(), "RECV", i.originatorAddress, i.messageSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR), i.messageType);
-            this->resId++;
-            this->res.push_back(item);
-            this->packetCount++;
-            this->tmpCount++;
-            this->DIST += op_td_get_dbl(p, OPC_TDA_RA_END_DIST);
-            this->DELAY += op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL);
-            this->BER += op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER);
-            this->SNR += op_td_get_dbl(p, OPC_TDA_RA_SNR);
-            this->acs->recvPackets(np);
+    if (np.packOri != op_node_id()) {        
+        for (auto &i : np.messagePackets) {
+            if (i.originatorAddress != op_node_id()) {
+                // cout << op_node_id() << " " << i.originatorAddress << " " << i.messageSequenceNumber << endl;
+                results item(this->resId, op_sim_time(), "RECV", i.originatorAddress, i.messageSequenceNumber, op_td_get_dbl(p, OPC_TDA_RA_END_DIST), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER), op_td_get_dbl(p, OPC_TDA_RA_SNR), i.messageType);
+                this->resId++;
+                this->res.push_back(item);
+                this->packetCount++;
+                this->tmpCount++;
+                this->DIST += op_td_get_dbl(p, OPC_TDA_RA_END_DIST);
+                this->DELAY += op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL);
+                this->BER += op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER);
+                this->SNR += op_td_get_dbl(p, OPC_TDA_RA_SNR);
+                this->acs->recvPackets(np);
+            }
         }
+        this->distArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_END_DIST)));
+        this->delayArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL)));
+        this->berArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER)));
+        this->snrArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_SNR)));
     }
     op_pk_destroy(p);
     // cout << "recv end" << endl;
@@ -234,6 +351,8 @@ void opnet_ctrller::on_stat(int id) {
 void opnet_ctrller::on_sim_stop() {
     // cout << "node " << op_node_id() << " stop at time : " << op_sim_time() << endl;
     // cout << "node " << op_node_id() << " received packets: " << this->packetCount << endl;
+    // cout << "node " << op_node_id() << " forwarded packets: " << this->acs->getForwardCount() << endl;
+    // cout << "node " << op_node_id() << " forwarded times: " << this->acs->getForwardCountSave() << endl;
     // this->printRess();
 }
 
