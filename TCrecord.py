@@ -12,7 +12,7 @@ def drawItem(data, name):
     plt.title(name)
     plt.ylim(bottom=0, top=200)
     plt.xticks(np.arange(0, 600, 50))
-    plt.yticks(np.arange(0, 150, 25))
+    plt.yticks(np.arange(0, 151, 25))
     plt.xlabel("Simulation time")
     plt.ylabel("Forwarded Packets Count")
     for item in data:
