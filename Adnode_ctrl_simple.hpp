@@ -16,11 +16,14 @@ namespace opnet
         vector<duplicat_set> repeatTable;
         UNINT packetSequenceNumber;
         vector<message_packet> need2Forward;
+        UNINT forwardCount;
+        vector<pair<double, UNINT>> forwardCountSave;
     public:
         Adnode_ctrl_simple(UNINT nodeId) {
             this->nodeId = nodeId;
             this->tm = new table_manager(this->nodeId);
             this->packetSequenceNumber = 0;
+            this->forwardCount = 0;
         }
         ~Adnode_ctrl_simple() {
             delete tm;
@@ -30,5 +33,7 @@ namespace opnet
         void recvPackets(OLSR_packet opack);
         void forwardPackets(message_packet mp);
         void updateTMWill(double, calType);
+        UNINT getForwardCount() {return this->forwardCount;}
+        UNINT getForwardCountSave();
     };
 } // namespace opnet

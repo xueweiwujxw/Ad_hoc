@@ -1,6 +1,8 @@
 #pragma once
 #include <Adnode_ctrl_simple.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 using namespace std;
 using namespace opnet;
@@ -47,6 +49,7 @@ void Adnode_ctrl_simple::updateRepeatTable(message_packet mp, UNINT packOri) {
         if (mp.messageType == TC) {
             // cout << op_node_id() << " ";
             // cout << op_sim_time() << ": start process TC from " << mp.originatorAddress << endl;
+            // cout << this->nodeId << " " << mp.originatorAddress << " " << mp.messageSequenceNumber << endl;
             tm->updateTopologyTable(mp);
             // cout << "end process TC" << endl;
         }
@@ -98,9 +101,16 @@ pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc)
         // cout << " TC " << endl;
     }
     if (!this->need2Forward.empty()) {
-        for (auto &i : this->need2Forward)
+        // if (this->nodeId == 14)
+        //     cout << this->need2Forward.size() << endl;
+        this->forwardCountSave.push_back(make_pair(op_sim_time(), this->need2Forward.size()));
+        for (auto &i : this->need2Forward) {
             opack.messagePackets.push_back(i);
-        cout << " FORWARD " << endl;
+            // cout << this->nodeId << " " << i.originatorAddress << " " << i.messageSequenceNumber << endl;
+            this->forwardCount++;
+        }
+        this->need2Forward.clear();
+        // cout << " FORWARD " << endl;
     }
     // cout << " get packets success" << endl;
     // opack->packetLenth = 4;
@@ -111,4 +121,15 @@ pair<OLSR_packet, UNINT> Adnode_ctrl_simple::getOLSRPackets(bool hello, bool tc)
 
 void Adnode_ctrl_simple::updateTMWill(double res, calType type) {
     tm->updateWill(res, type);
+}
+
+UNINT Adnode_ctrl_simple::getForwardCountSave() {
+    // fstream f;
+    // string filename = to_string(this->nodeId) + "TCforward.txt";
+    // f.open(filename, ios::out);
+    // for (auto &i : this->forwardCountSave){
+    //     f << i.first << " " << i.second << endl;
+    // }
+    // f.close();
+    return this->forwardCountSave.size();
 }
