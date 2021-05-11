@@ -53,9 +53,11 @@ namespace opnet
     enum Willingness
     {
         WILL_NEVER,
+        WILL_LOWER,
         WILL_LOW,
         WILL_DEFAULT,
         WILL_HIGH,
+        WILL_HIGHER,
         WILL_ALWAYS
     };
 

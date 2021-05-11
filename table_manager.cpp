@@ -592,7 +592,33 @@ void table_manager::print() {
 
 void table_manager::updateWill(double res, calType ct) {
     this->willSelf = WILL_DEFAULT;
-    cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
+    if (ct == TYPE_SNR) {
+        if (res < 5)
+            this->willSelf = WILL_NEVER;
+        else if (res < 6)
+            this->willSelf = WILL_LOWER;
+        else if (res < 7)
+            this->willSelf = WILL_LOW;
+        else if (res < 8)
+            this->willSelf = WILL_DEFAULT;
+        else if (res < 9)
+            this->willSelf = WILL_HIGH;
+        else if (res < 10)
+            this->willSelf = WILL_HIGHER;
+        else 
+            this->willSelf = WILL_ALWAYS;
+    }
+    else if (ct == TYPE_BER) {
+
+    }
+    else if (ct == TYPE_DIST) {
+
+    }
+    else if (ct == TYPE_DELAY) {
+
+    }
+    // if (this->nodeId == 13)
+    //     cout << op_sim_time() << " node " << this->nodeId << ": " << res << endl;
 }
 
 bool table_manager::isInMprTable(UNINT findNode) {
