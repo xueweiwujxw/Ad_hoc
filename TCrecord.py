@@ -5,14 +5,14 @@ import numpy as np
 import math
 from matplotlib.ticker import FuncFormatter
 
-path0 = "./data/TC/new"
-path1 = "./data/TC/old"
+path0 = "./data/TC/newWithMove"
+path1 = "./data/TC/oriWithMove"
 
 def drawItem(data, name):
     plt.title(name)
-    plt.ylim(bottom=0, top=200)
-    plt.xticks(np.arange(0, 600, 50))
-    plt.yticks(np.arange(0, 151, 25))
+    plt.ylim(bottom=0, top=280)
+    plt.xticks(np.arange(0, 1201, 50))
+    plt.yticks(np.arange(0, 251, 25))
     plt.xlabel("Simulation time")
     plt.ylabel("Forwarded Packets Count")
     for item in data:
@@ -29,7 +29,7 @@ def readTC(filePath):
         files = list(filter(lambda x:x[-4:] == '.txt', files))
         times = []
         forwardCount = []
-        for i in range(120):
+        for i in range(240):
             times.append(i)
             forwardCount.append(0)
         # print(files)
@@ -45,9 +45,9 @@ def readTC(filePath):
                     forwardCount[number] += int(linePair[1])
         times = np.array(times)
         times *= 5
-        data.append((times, forwardCount, iPath[-3:]))
+        data.append((times, forwardCount, iPath[10:13]))
     # print(times)
-    drawItem(data, "TCForward")
+    drawItem(data, "TCForward with Move")
 
 if __name__ == "__main__":
     readTC((path0, path1))
