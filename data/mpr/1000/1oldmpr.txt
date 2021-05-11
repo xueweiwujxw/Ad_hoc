@@ -1,0 +1,298 @@
+node 1 mpr set: 0.100044
+
+node 1 mpr set: 0.250027
+
+node 1 mpr set: 0.750045
+
+node 1 mpr set: 2.10005
+
+node 1 mpr set: 2.25003
+
+node 1 mpr set: 2.75005
+15 
+node 1 mpr set: 4.10005
+15 
+node 1 mpr set: 4.25003
+15 
+node 1 mpr set: 4.75005
+15 
+node 1 mpr set: 6.10005
+15 
+node 1 mpr set: 6.25003
+15 
+node 1 mpr set: 6.75004
+15 
+node 1 mpr set: 8.10005
+15 
+node 1 mpr set: 8.25003
+15 
+node 1 mpr set: 8.75004
+15 
+node 1 mpr set: 10.1
+15 
+node 1 mpr set: 10.25
+15 
+node 1 mpr set: 10.75
+15 
+node 1 mpr set: 12.1
+15 
+node 1 mpr set: 12.25
+15 
+node 1 mpr set: 12.75
+15 
+node 1 mpr set: 14.1
+15 
+node 1 mpr set: 14.25
+15 
+node 1 mpr set: 14.75
+15 
+node 1 mpr set: 16.1
+15 
+node 1 mpr set: 16.25
+15 
+node 1 mpr set: 16.75
+15 
+node 1 mpr set: 18.1001
+15 
+node 1 mpr set: 18.25
+15 
+node 1 mpr set: 18.75
+15 
+node 1 mpr set: 20.1001
+15 
+node 1 mpr set: 20.25
+15 
+node 1 mpr set: 20.75
+15 
+node 1 mpr set: 22.25
+15 
+node 1 mpr set: 22.75
+15 
+node 1 mpr set: 24.1
+15 
+node 1 mpr set: 24.25
+15 
+node 1 mpr set: 24.75
+15 
+node 1 mpr set: 26.1
+15 
+node 1 mpr set: 26.25
+15 
+node 1 mpr set: 26.75
+15 
+node 1 mpr set: 28.1
+15 
+node 1 mpr set: 28.25
+15 
+node 1 mpr set: 28.75
+15 
+node 1 mpr set: 30.1
+15 
+node 1 mpr set: 30.25
+15 
+node 1 mpr set: 30.75
+15 
+node 1 mpr set: 32.1
+15 
+node 1 mpr set: 32.25
+15 
+node 1 mpr set: 32.75
+15 
+node 1 mpr set: 34.1
+15 
+node 1 mpr set: 34.25
+15 
+node 1 mpr set: 34.75
+15 
+node 1 mpr set: 36.1
+15 
+node 1 mpr set: 36.25
+15 
+node 1 mpr set: 36.75
+15 
+node 1 mpr set: 38.1
+15 
+node 1 mpr set: 38.25
+15 
+node 1 mpr set: 38.75
+15 
+node 1 mpr set: 40.1
+15 
+node 1 mpr set: 40.25
+15 
+node 1 mpr set: 40.75
+15 
+node 1 mpr set: 42.1
+15 
+node 1 mpr set: 42.25
+15 
+node 1 mpr set: 42.75
+15 
+node 1 mpr set: 44.1
+15 
+node 1 mpr set: 44.25
+15 
+node 1 mpr set: 44.75
+15 
+node 1 mpr set: 46.1001
+15 
+node 1 mpr set: 46.25
+15 
+node 1 mpr set: 46.75
+15 
+node 1 mpr set: 48.1001
+15 
+node 1 mpr set: 48.25
+15 
+node 1 mpr set: 48.75
+15 
+node 1 mpr set: 50.1001
+15 
+node 1 mpr set: 50.25
+15 
+node 1 mpr set: 50.75
+15 
+node 1 mpr set: 52.1001
+15 
+node 1 mpr set: 52.25
+15 
+node 1 mpr set: 52.75
+15 
+node 1 mpr set: 54.1001
+15 
+node 1 mpr set: 54.25
+15 
+node 1 mpr set: 54.75
+15 
+node 1 mpr set: 56.1
+15 
+node 1 mpr set: 56.25
+15 
+node 1 mpr set: 56.75
+15 
+node 1 mpr set: 58.1
+15 
+node 1 mpr set: 58.25
+15 
+node 1 mpr set: 58.75
+15 
+node 1 mpr set: 60.1
+15 
+node 1 mpr set: 60.25
+15 
+node 1 mpr set: 60.75
+15 
+node 1 mpr set: 62.1
+15 
+node 1 mpr set: 62.25
+15 
+node 1 mpr set: 62.75
+15 
+node 1 mpr set: 64.1
+15 
+node 1 mpr set: 64.25
+15 
+node 1 mpr set: 64.75
+15 
+node 1 mpr set: 66.1
+15 
+node 1 mpr set: 66.25
+15 
+node 1 mpr set: 66.75
+15 
+node 1 mpr set: 68.1
+15 
+node 1 mpr set: 68.25
+15 
+node 1 mpr set: 68.75
+15 
+node 1 mpr set: 70.1
+15 
+node 1 mpr set: 70.25
+15 
+node 1 mpr set: 70.75
+15 
+node 1 mpr set: 72.1
+15 
+node 1 mpr set: 72.25
+15 
+node 1 mpr set: 72.75
+15 
+node 1 mpr set: 74.1
+15 
+node 1 mpr set: 74.25
+15 
+node 1 mpr set: 74.75
+15 
+node 1 mpr set: 76.1001
+15 
+node 1 mpr set: 76.25
+15 
+node 1 mpr set: 76.7501
+15 
+node 1 mpr set: 78.1001
+15 
+node 1 mpr set: 78.25
+15 
+node 1 mpr set: 78.75
+15 
+node 1 mpr set: 80.1001
+15 
+node 1 mpr set: 80.25
+15 
+node 1 mpr set: 80.75
+15 
+node 1 mpr set: 82.1001
+15 
+node 1 mpr set: 82.25
+15 
+node 1 mpr set: 82.75
+15 
+node 1 mpr set: 84.1
+15 
+node 1 mpr set: 84.25
+15 
+node 1 mpr set: 84.75
+15 
+node 1 mpr set: 86.1
+15 
+node 1 mpr set: 86.25
+15 
+node 1 mpr set: 86.75
+15 
+node 1 mpr set: 88.1
+15 
+node 1 mpr set: 88.25
+15 
+node 1 mpr set: 88.75
+15 
+node 1 mpr set: 90.1
+15 
+node 1 mpr set: 90.25
+15 
+node 1 mpr set: 90.75
+15 
+node 1 mpr set: 92.1
+15 
+node 1 mpr set: 92.25
+15 
+node 1 mpr set: 92.75
+15 
+node 1 mpr set: 94.1
+15 
+node 1 mpr set: 94.25
+15 
+node 1 mpr set: 94.75
+15 
+node 1 mpr set: 96.1
+15 
+node 1 mpr set: 96.25
+15 
+node 1 mpr set: 96.75
+15 
+node 1 mpr set: 98.1
+15 
+node 1 mpr set: 98.25
+15 
+node 1 mpr set: 98.75
+15 

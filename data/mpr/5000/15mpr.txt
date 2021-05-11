@@ -1,0 +1,426 @@
+node 15 mpr set: 0.0500364
+
+node 15 mpr set: 0.100046
+
+node 15 mpr set: 0.200068
+
+node 15 mpr set: 0.250037
+
+node 15 mpr set: 0.300059
+
+node 15 mpr set: 0.35005
+
+node 15 mpr set: 2.05004
+
+node 15 mpr set: 2.10005
+
+node 15 mpr set: 2.25004
+
+node 15 mpr set: 2.30006
+6 
+node 15 mpr set: 2.35006
+6 
+node 15 mpr set: 4.05004
+6 
+node 15 mpr set: 4.10005
+6 
+node 15 mpr set: 4.25004
+6 
+node 15 mpr set: 4.35007
+6 7 
+node 15 mpr set: 6.05004
+6 7 
+node 15 mpr set: 6.10005
+6 7 
+node 15 mpr set: 6.25004
+6 7 
+node 15 mpr set: 6.30006
+6 7 
+node 15 mpr set: 8.05004
+6 7 
+node 15 mpr set: 8.10005
+6 7 
+node 15 mpr set: 8.25004
+6 7 
+node 15 mpr set: 8.30006
+6 7 
+node 15 mpr set: 10.05
+6 7 
+node 15 mpr set: 10.1
+6 
+node 15 mpr set: 10.25
+6 
+node 15 mpr set: 10.3001
+6 
+node 15 mpr set: 12.05
+6 
+node 15 mpr set: 12.1
+6 
+node 15 mpr set: 12.25
+6 
+node 15 mpr set: 12.3001
+6 
+node 15 mpr set: 14.05
+6 
+node 15 mpr set: 14.1
+6 
+node 15 mpr set: 14.25
+6 
+node 15 mpr set: 14.3001
+6 
+node 15 mpr set: 14.3501
+6 7 
+node 15 mpr set: 16.0501
+6 7 
+node 15 mpr set: 16.1
+6 7 
+node 15 mpr set: 16.25
+6 7 
+node 15 mpr set: 16.3501
+6 7 
+node 15 mpr set: 18.0501
+6 7 
+node 15 mpr set: 18.1
+6 7 
+node 15 mpr set: 18.2001
+6 7 
+node 15 mpr set: 18.25
+6 7 
+node 15 mpr set: 18.3501
+6 7 
+node 15 mpr set: 20.0501
+6 7 
+node 15 mpr set: 20.1
+7 
+node 15 mpr set: 20.2001
+4 7 
+node 15 mpr set: 20.2501
+4 7 
+node 15 mpr set: 20.35
+4 7 
+node 15 mpr set: 22.0501
+4 7 
+node 15 mpr set: 22.1
+4 7 
+node 15 mpr set: 22.2001
+4 7 
+node 15 mpr set: 22.2501
+4 7 
+node 15 mpr set: 22.3001
+4 7 
+node 15 mpr set: 22.35
+4 7 
+node 15 mpr set: 24.0501
+4 7 
+node 15 mpr set: 24.1
+4 7 
+node 15 mpr set: 24.2001
+4 7 
+node 15 mpr set: 24.2501
+4 7 
+node 15 mpr set: 24.3001
+4 7 
+node 15 mpr set: 24.35
+4 7 
+node 15 mpr set: 26.05
+4 7 
+node 15 mpr set: 26.1
+4 7 
+node 15 mpr set: 26.25
+4 7 
+node 15 mpr set: 26.35
+4 7 
+node 15 mpr set: 28.05
+4 7 
+node 15 mpr set: 28.1
+4 7 
+node 15 mpr set: 28.25
+4 7 
+node 15 mpr set: 28.35
+4 7 
+node 15 mpr set: 30.05
+4 7 
+node 15 mpr set: 30.1
+7 
+node 15 mpr set: 30.25
+7 
+node 15 mpr set: 30.3501
+7 
+node 15 mpr set: 32.05
+7 
+node 15 mpr set: 32.1
+7 
+node 15 mpr set: 32.25
+7 
+node 15 mpr set: 32.3501
+7 
+node 15 mpr set: 34.05
+7 
+node 15 mpr set: 34.1001
+7 
+node 15 mpr set: 34.25
+7 
+node 15 mpr set: 34.3501
+7 
+node 15 mpr set: 36.05
+7 
+node 15 mpr set: 36.1001
+7 
+node 15 mpr set: 36.25
+7 
+node 15 mpr set: 36.3501
+7 
+node 15 mpr set: 38.05
+7 
+node 15 mpr set: 38.25
+7 
+node 15 mpr set: 38.3501
+7 
+node 15 mpr set: 40.05
+7 
+node 15 mpr set: 40.25
+7 
+node 15 mpr set: 40.3501
+7 
+node 15 mpr set: 40.8001
+7 
+node 15 mpr set: 42.05
+7 
+node 15 mpr set: 42.25
+7 
+node 15 mpr set: 42.3501
+7 
+node 15 mpr set: 44.05
+7 
+node 15 mpr set: 44.25
+7 
+node 15 mpr set: 44.3501
+7 
+node 15 mpr set: 44.8001
+7 16 
+node 15 mpr set: 46.05
+7 16 
+node 15 mpr set: 46.25
+7 16 
+node 15 mpr set: 46.3501
+7 16 
+node 15 mpr set: 46.8001
+7 16 
+node 15 mpr set: 48.05
+7 16 
+node 15 mpr set: 48.2501
+5 7 16 
+node 15 mpr set: 48.3001
+5 7 16 
+node 15 mpr set: 48.3501
+5 7 16 
+node 15 mpr set: 50.0501
+5 7 16 
+node 15 mpr set: 50.3001
+5 7 16 
+node 15 mpr set: 50.3501
+5 7 16 
+node 15 mpr set: 52.05
+5 7 16 
+node 15 mpr set: 52.1001
+5 6 7 
+node 15 mpr set: 52.2501
+5 6 7 
+node 15 mpr set: 52.3001
+5 6 7 
+node 15 mpr set: 52.3501
+5 6 7 
+node 15 mpr set: 54.05
+5 6 7 
+node 15 mpr set: 54.25
+5 6 7 
+node 15 mpr set: 54.3501
+5 6 7 
+node 15 mpr set: 56.05
+5 6 7 
+node 15 mpr set: 56.1001
+6 7 
+node 15 mpr set: 56.25
+6 7 
+node 15 mpr set: 56.3501
+6 7 
+node 15 mpr set: 58.05
+6 7 
+node 15 mpr set: 58.1001
+7 
+node 15 mpr set: 58.25
+7 
+node 15 mpr set: 58.3501
+7 
+node 15 mpr set: 60.05
+7 
+node 15 mpr set: 60.1001
+5 7 
+node 15 mpr set: 60.25
+5 7 
+node 15 mpr set: 60.3501
+5 7 
+node 15 mpr set: 62.05
+5 7 
+node 15 mpr set: 62.1001
+7 
+node 15 mpr set: 62.25
+7 
+node 15 mpr set: 62.3501
+7 
+node 15 mpr set: 64.05
+7 
+node 15 mpr set: 64.25
+7 
+node 15 mpr set: 64.3501
+7 
+node 15 mpr set: 66.05
+7 
+node 15 mpr set: 66.1001
+7 
+node 15 mpr set: 66.25
+7 
+node 15 mpr set: 66.3501
+7 
+node 15 mpr set: 68.05
+7 
+node 15 mpr set: 68.1
+7 
+node 15 mpr set: 68.25
+7 
+node 15 mpr set: 68.3501
+7 
+node 15 mpr set: 70.05
+7 
+node 15 mpr set: 70.1
+7 
+node 15 mpr set: 70.3501
+7 
+node 15 mpr set: 72.05
+7 
+node 15 mpr set: 72.1
+7 
+node 15 mpr set: 72.25
+7 
+node 15 mpr set: 72.3501
+7 
+node 15 mpr set: 74.05
+7 
+node 15 mpr set: 74.1001
+7 
+node 15 mpr set: 74.25
+7 
+node 15 mpr set: 74.3501
+2 7 
+node 15 mpr set: 76.05
+2 7 
+node 15 mpr set: 76.1001
+2 7 
+node 15 mpr set: 76.25
+2 7 
+node 15 mpr set: 76.3001
+2 7 
+node 15 mpr set: 78.05
+2 7 
+node 15 mpr set: 78.1001
+2 7 
+node 15 mpr set: 78.25
+2 7 
+node 15 mpr set: 78.3501
+7 
+node 15 mpr set: 80.05
+7 
+node 15 mpr set: 80.25
+7 
+node 15 mpr set: 82.05
+7 
+node 15 mpr set: 82.1001
+7 
+node 15 mpr set: 82.25
+7 
+node 15 mpr set: 82.3001
+7 
+node 15 mpr set: 84.05
+7 
+node 15 mpr set: 84.1001
+
+node 15 mpr set: 84.25
+
+node 15 mpr set: 84.3501
+7 
+node 15 mpr set: 86.05
+7 
+node 15 mpr set: 86.1
+7 
+node 15 mpr set: 86.25
+7 
+node 15 mpr set: 86.3001
+6 7 
+node 15 mpr set: 86.3501
+6 7 
+node 15 mpr set: 88.05
+6 7 
+node 15 mpr set: 88.1
+6 7 
+node 15 mpr set: 88.2001
+6 7 
+node 15 mpr set: 88.2501
+6 7 
+node 15 mpr set: 88.3001
+6 7 
+node 15 mpr set: 88.3501
+6 7 
+node 15 mpr set: 90.0501
+6 7 
+node 15 mpr set: 90.1
+6 7 
+node 15 mpr set: 90.2001
+4 6 7 
+node 15 mpr set: 90.2501
+4 6 7 
+node 15 mpr set: 90.3001
+4 6 7 
+node 15 mpr set: 90.35
+4 6 7 
+node 15 mpr set: 92.0501
+4 6 7 
+node 15 mpr set: 92.1
+4 6 7 
+node 15 mpr set: 92.2001
+4 6 7 
+node 15 mpr set: 92.2501
+4 6 7 
+node 15 mpr set: 92.3001
+4 6 7 
+node 15 mpr set: 92.35
+4 6 7 
+node 15 mpr set: 94.0501
+4 6 7 
+node 15 mpr set: 94.1
+4 6 7 
+node 15 mpr set: 94.2001
+4 6 7 
+node 15 mpr set: 94.2501
+4 6 7 
+node 15 mpr set: 94.3501
+4 6 7 
+node 15 mpr set: 96.0501
+4 6 7 
+node 15 mpr set: 96.1
+4 6 7 
+node 15 mpr set: 96.2001
+4 6 7 
+node 15 mpr set: 96.2501
+4 6 7 
+node 15 mpr set: 96.3501
+4 6 7 
+node 15 mpr set: 98.0501
+4 6 7 
+node 15 mpr set: 98.1
+4 7 
+node 15 mpr set: 98.2001
+4 7 
+node 15 mpr set: 98.2501
+4 7 
+node 15 mpr set: 98.3501
+4 7 
