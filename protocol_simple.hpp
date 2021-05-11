@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 using namespace std;
 
 namespace opnet
@@ -10,14 +11,29 @@ namespace opnet
 #define NEIGHB_HOLD_TIME 6
 #define TOP_HOLD_TIME 15
 #define DUP_HOLD_TIME 30
+#define WILL_UP_TIME max(HELLO_INTERVAL, TC_INTERVAL)
 
 #define UNINT unsigned int
+
+    enum ScheduleCode
+    {
+        OPC_HELLO_SEND,
+        OPC_TC_SEND,
+        OPC_QUA_CAL
+    };
+
+    enum calType 
+    {
+        TYPE_DIST,
+        TYPE_BER,
+        TYPE_DELAY,
+        TYPE_SNR,
+    };
 
     enum LinkCode
     {
         ASYM_LINK,
         SYM_LINK,
-        MPR_LINK,
         LOST_LINK
     };
 
@@ -37,9 +53,11 @@ namespace opnet
     enum Willingness
     {
         WILL_NEVER,
+        WILL_LOWER,
         WILL_LOW,
         WILL_DEFAULT,
         WILL_HIGH,
+        WILL_HIGHER,
         WILL_ALWAYS
     };
 
@@ -61,49 +79,61 @@ namespace opnet
 
     struct link_status
     {
-        UNINT linkcode;
+        UNINT linkcode: 16;
+        UNINT num: 16;
         vector<UNINT> neighborAddress;
         link_status(LinkCode lc) {
-            this->linkcode = 0;
+            this->linkcode = lc;
         }
+        link_status() {}
         UNINT getSize() {
-            return 4 + 4 * this->neighborAddress.size();
+            this->num = this->neighborAddress.size();
+            return 1 + this->neighborAddress.size();
         }
     };
 
     struct neigh_status
     {
-        UNINT neighcode;
+        UNINT neighcode: 16;
+        UNINT num: 16;
         vector<UNINT> neighborAddress;
         neigh_status(NeighCode nc) {
             this->neighcode = nc;
         }
+        neigh_status() {}
         UNINT getSize() {
-            return 4 + 4 * this->neighborAddress.size();
+            this->num = this->neighborAddress.size();
+            return 1 + this->neighborAddress.size();
         }
     };
     
     struct message_hello
     {
         UNINT willingness;
+        UNINT linkNum: 16;
+        UNINT neighNum: 16;
         vector<link_status> links;
         vector<neigh_status> neighs;
         UNINT getSize() {
-            UNINT count = 4;
+            UNINT count = 2;
             for (auto &i : this->links)
                 count += i.getSize();
             for (auto &i : this->neighs)
                 count += i.getSize();
+            this->linkNum = this->links.size();
+            this->neighNum = this->neighs.size();
             return count;
         }
     };
 
     struct message_tc
     {
-        UNINT MSSN;
-        vector<int> MPRSelectorAddresses;
+        UNINT MSSN: 16;
+        UNINT num: 16;
+        vector<UNINT> MPRSelectorAddresses;
         UNINT getSize() {
-            return 4 + 4 * this->MPRSelectorAddresses.size();
+            this->num = this->MPRSelectorAddresses.size();
+            return 1 + this->MPRSelectorAddresses.size();
         }
     };
 
@@ -112,12 +142,13 @@ namespace opnet
         UNINT id;
         UNINT time;
         UNINT getSize() {
-            return 8;
+            return 2;
         }
         message_normal(UNINT id, UNINT time) {
             this->id = id;
             this->time = time;
         }
+        message_normal() {}
     };
         
     struct message_packet
@@ -133,20 +164,41 @@ namespace opnet
         message_tc tcMessage;
         message_normal normalMessage;
         int getSize() {
-            if (this->messageType == HELLO)
-                this->messageSize = this->helloMessage.getSize();
-            else if (this->messageType == TC)
-                this->messageSize = this->tcMessage.getSize();
-            else if (this->messageType == NORMAL)
-                this->messageSize = this->normalMessage.getSize();
+            if (this->messageType == HELLO) {
+                this->messageSize = this->helloMessage.getSize() + 3;
+            }
+            else if (this->messageType == TC) {
+                this->messageSize = this->tcMessage.getSize() + 3;
+            }
+            else if (this->messageType == NORMAL) {
+                this->messageSize = this->normalMessage.getSize() + 3;
+            }
+            return this->messageSize;
+        }
+        message_packet(UNINT messageType, UNINT vTime, UNINT originatorAddress, UNINT TTL, UNINT hopCount, UNINT messageSequenceNumber) {
+            this->messageType = messageType;
+            this->vTime = vTime;
+            this->originatorAddress = originatorAddress;
+            this->TTL = TTL;
+            this->hopCount = hopCount;
+            this->messageSequenceNumber = messageSequenceNumber;
         }
     };
     
     struct OLSR_packet
     {
+        UNINT packOri;
         UNINT packetLenth: 16;
         UNINT packetSequenceNumber: 16;
         vector<message_packet> messagePackets;
+        int getSize() {
+            UNINT size = 2;
+            for (auto &i: this->messagePackets) {
+                size += i.getSize();
+            }
+            this->packetLenth = this->messagePackets.size();
+            return size;
+        }
     };
 
     struct local_link
@@ -155,7 +207,6 @@ namespace opnet
         UNINT L_SYM_time;
         UNINT L_ASYM_time;
         UNINT L_time;
-        UNINT L_quality;
     };
 
     struct two_hop_neighbor

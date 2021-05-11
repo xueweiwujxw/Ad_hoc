@@ -31,8 +31,8 @@ def calTrajectory(nodeNum, changeCount):
         pos = []
         pos.append((0, 0, 0, "0h0m0.00s", "0h0m0.00s"))
         for j in range(changeCount):
-            x = random.random() * 1000.0
-            y = random.random() * 1000.0
+            x = random.random() * 10.0
+            y = random.random() * 10.0
             z = 0
             x = x if random.randint(0, 1) == 1 else -x
             y = y if random.randint(0, 1) == 1 else -y
@@ -43,5 +43,5 @@ def calTrajectory(nodeNum, changeCount):
 
 if __name__ == '__main__':
     nodeNum = 20
-    posRes = calTrajectory(nodeNum, 10)
+    posRes = calTrajectory(nodeNum, 60)
     writeFile(nodeNum, posRes)
