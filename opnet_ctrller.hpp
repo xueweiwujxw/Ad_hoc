@@ -62,16 +62,14 @@ namespace opnet {
         int packetSequence;
         vector<results> res;
         int resId;
-        double SNR;
-        double DIST;
-        double DELAY;
-        double BER;
-        double tmpCount;
         Adnode_ctrl_simple* acs;
         vector<pair<double, double>> distArray;
         vector<pair<double, double>> delayArray;
         vector<pair<double, double>> berArray;
         vector<pair<double, double>> snrArray;
+        vector<pair<double, double>> delay;
+        double quality;
+        bool firstQual;
 
     public:
         opnet_ctrller();

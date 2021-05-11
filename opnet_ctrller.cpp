@@ -1,6 +1,8 @@
 #include <opnet.h>
 #include <opnet_ctrller.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 using namespace std;
 using namespace opnet;
@@ -10,11 +12,6 @@ opnet_ctrller::opnet_ctrller() {
     // this->packetSequence = 0;
     this->packetCount = 0;
     this->resId = 0;
-    this->SNR = 0;
-    this->DIST = 0;
-    this->tmpCount = 0;
-    this->BER = 0;
-    this->DELAY = 0;
 }
 opnet_ctrller::~opnet_ctrller() { 
     delete acs;
@@ -108,7 +105,7 @@ void opnet_ctrller::on_self() {
         // cout << "send HELLO" << endl;
     }
     else if (op_intrpt_code() == OPC_QUA_CAL) {
-        this->cacluate(TYPE_SNR);
+        this->cacluate(TYPE_BER);
     }
 }
 
@@ -135,9 +132,6 @@ void opnet_ctrller::cacluate(calType ct) {
             weigh[midaf + i] = 1 / double(WILL_UP_TIME) + cnt * (i + 1);
         }
     }
-    // for (auto &i : weigh)
-    //     cout << i << " ";
-    // cout << endl;
     double res = 0;
     if (ct == TYPE_DIST) {
         res = 0;
@@ -163,8 +157,6 @@ void opnet_ctrller::cacluate(calType ct) {
             res += inres / double(rec[i].size());
         }
         this->acs->updateTMWill(res, ct);
-        this->DIST = 0;
-        this->tmpCount = 0;
     }
     else if (ct == TYPE_BER) {
         res = 0;
@@ -190,8 +182,6 @@ void opnet_ctrller::cacluate(calType ct) {
             res += inres / double(rec[i].size());
         }
         this->acs->updateTMWill(res, ct);
-        this->BER = 0;
-        this->tmpCount = 0;
     }
     else if (ct == TYPE_DELAY) {
         res = 0;
@@ -217,8 +207,6 @@ void opnet_ctrller::cacluate(calType ct) {
             res += inres / double(rec[i].size());
         }
         this->acs->updateTMWill(res, ct);
-        this->DELAY = 0;
-        this->tmpCount = 0;
     }
     else if (ct == TYPE_SNR) {
         res = 0;
@@ -244,8 +232,6 @@ void opnet_ctrller::cacluate(calType ct) {
             res += inres / double(rec[i].size());
         }
         this->acs->updateTMWill(res, ct);
-        this->SNR = 0;
-        this->tmpCount = 0;
     }
     // cout << this->distArray.size() << " " << this->delayArray.size() << " " << this->berArray.size() << " " << this->snrArray.size() << endl;
     this->distArray.clear();
@@ -327,14 +313,10 @@ void opnet_ctrller::on_stream(int id) {
                 this->resId++;
                 this->res.push_back(item);
                 this->packetCount++;
-                this->tmpCount++;
-                this->DIST += op_td_get_dbl(p, OPC_TDA_RA_END_DIST);
-                this->DELAY += op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL);
-                this->BER += op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER);
-                this->SNR += op_td_get_dbl(p, OPC_TDA_RA_SNR);
                 this->acs->recvPackets(np);
             }
         }
+        this->delay.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL)));
         this->distArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_END_DIST)));
         this->delayArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_END_PROPDEL)));
         this->berArray.push_back(make_pair(op_sim_time(), op_td_get_dbl(p, OPC_TDA_RA_ACTUAL_BER)));
@@ -351,9 +333,18 @@ void opnet_ctrller::on_stat(int id) {
 void opnet_ctrller::on_sim_stop() {
     // cout << "node " << op_node_id() << " stop at time : " << op_sim_time() << endl;
     // cout << "node " << op_node_id() << " received packets: " << this->packetCount << endl;
-    // cout << "node " << op_node_id() << " forwarded packets: " << this->acs->getForwardCount() << endl;
-    // cout << "node " << op_node_id() << " forwarded times: " << this->acs->getForwardCountSave() << endl;
+    cout << "node " << op_node_id() << " forwarded packets: " << this->acs->getForwardCount() << endl;
+    cout << "node " << op_node_id() << " forwarded times: " << this->acs->getForwardCountSave() << endl;
     // this->printRess();
+    // if (op_node_id() == 7)
+    //     this->printRess();
+    // fstream f;
+    // string filename = to_string(op_node_id()) + "delay.txt";
+    // f.open(filename, ios::out);
+    // for (auto &i : this->delay) {
+    //     f << i.first << " " << i.second << endl;
+    // }
+    // f.close();
 }
 
 void opnet_ctrller::printRess() {
